@@ -1,8 +1,19 @@
+'use client';
+
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function Pricing() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [loading, setLoading] = useState<string | null>(null);
+  const [error, setError] = useState('');
+
   const plans = [
     {
+      id: 'starter',
       name: 'Starter',
       price: 49,
       competitors: 5,
@@ -10,7 +21,8 @@ export default function Pricing() {
       highlighted: false,
     },
     {
-      name: 'Pro',
+      id: 'professional',
+      name: 'Professional',
       price: 99,
       competitors: 20,
       features: [
@@ -23,6 +35,7 @@ export default function Pricing() {
       highlighted: true,
     },
     {
+      id: 'enterprise',
       name: 'Enterprise',
       price: 299,
       competitors: 100,
@@ -36,6 +49,43 @@ export default function Pricing() {
       highlighted: false,
     },
   ];
+
+  const handleGetStarted = async (planId: string) => {
+    // If not authenticated, redirect to signin
+    if (status === 'unauthenticated') {
+      router.push('/auth/signin');
+      return;
+    }
+
+    // If loading, wait
+    if (status === 'loading') {
+      return;
+    }
+
+    try {
+      setLoading(planId);
+      setError('');
+
+      const res = await fetch('/api/billing/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: planId, billingCycle: 'monthly' }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to create checkout session');
+      }
+
+      // Redirect to Stripe checkout
+      window.location.href = data.checkoutUrl;
+    } catch (err: any) {
+      console.error('Checkout error:', err);
+      setError(err.message || 'Failed to start checkout');
+      setLoading(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">

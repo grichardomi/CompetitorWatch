@@ -6,13 +6,20 @@ import { getToken } from 'next-auth/jwt';
  */
 const protectedPaths = ['/dashboard', '/onboarding'];
 
+/**
+ * Admin routes that require admin role
+ */
+const adminPaths = ['/admin'];
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Check if the route is protected
   const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path));
+  const isAdminPath = adminPaths.some(path => pathname.startsWith(path));
 
-  if (!isProtectedPath) {
+  // Admin paths are also protected
+  if (!isProtectedPath && !isAdminPath) {
     return NextResponse.next();
   }
 
@@ -27,6 +34,21 @@ export async function middleware(request: NextRequest) {
     const signInUrl = new URL('/auth/signin', request.url);
     signInUrl.searchParams.set('callbackUrl', pathname);
     return NextResponse.redirect(signInUrl);
+  }
+
+  // Check admin access for admin routes
+  if (isAdminPath) {
+    console.log('Admin path access attempt:', {
+      email: token.email,
+      role: token.role,
+      hasRole: 'role' in token,
+      tokenKeys: Object.keys(token)
+    });
+
+    if (token.role !== 'admin') {
+      console.log('Access denied - role is not admin:', token.role);
+      return NextResponse.redirect(new URL('/auth/unauthorized', request.url));
+    }
   }
 
   return NextResponse.next();

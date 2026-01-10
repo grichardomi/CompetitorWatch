@@ -17,6 +17,7 @@ model User {
   name                  String?
   emailVerified         DateTime?
   image                 String?
+  role                  String    @default("user") // "user" or "admin"
   stripeCustomerId      String?   @unique
   onboardingCompletedAt DateTime?
   trialStartedAt        DateTime  @default(now())
@@ -36,6 +37,7 @@ model User {
 
   @@index([email])
   @@index([stripeCustomerId])
+  @@index([role])
 }
 
 model Account {

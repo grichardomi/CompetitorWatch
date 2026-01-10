@@ -188,6 +188,9 @@ export default function SettingsPage() {
               <Link href="/dashboard/alerts" className="text-gray-600 hover:text-gray-900 font-medium">
                 Alerts
               </Link>
+              <Link href="/dashboard/billing" className="text-gray-600 hover:text-gray-900 font-medium">
+                Billing
+              </Link>
               <Link
                 href="/dashboard/settings"
                 className="text-blue-600 font-medium border-b-2 border-blue-600"
@@ -481,6 +484,7 @@ export default function SettingsPage() {
             { label: 'Dashboard', href: '/dashboard', icon: '📊' },
             { label: 'Competitors', href: '/dashboard/competitors', icon: '👥' },
             { label: 'Alerts', href: '/dashboard/alerts', icon: '🔔' },
+            { label: 'Billing', href: '/dashboard/billing', icon: '💳' },
             { label: 'Settings', href: '/dashboard/settings', icon: '⚙️' },
           ].map((item) => (
             <Link

@@ -1,18 +1,37 @@
+'use client';
+
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  // Redirect authenticated users to dashboard
+  if (status === 'authenticated') {
+    router.push('/dashboard');
+    return null;
+  }
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       {/* Navigation */}
       <nav className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-200">
         <div className="text-2xl font-bold text-blue-600">CompetitorWatch</div>
         <div className="flex gap-4">
-          <Link href="/auth/signin" className="px-4 py-2 text-gray-600 hover:text-gray-900">
-            Sign In
-          </Link>
-          <Link href="/auth/signin" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-            Get Started
-          </Link>
+          {status === 'loading' ? (
+            <div className="px-4 py-2 text-gray-400">Loading...</div>
+          ) : (
+            <>
+              <Link href="/auth/signin" className="px-4 py-2 text-gray-600 hover:text-gray-900">
+                Sign In
+              </Link>
+              <Link href="/auth/signin" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                Get Started
+              </Link>
+            </>
+          )}
         </div>
       </nav>
 

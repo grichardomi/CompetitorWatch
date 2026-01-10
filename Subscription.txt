@@ -1,0 +1,482 @@
+
+
+
+💳 Stripe Subscription Plans - Complete Setup
+Here's the exact copy and configuration for your Stripe products:
+
+📦 Plan 1: Starter
+Stripe Product Details
+Product Name (Internal):
+CompetitorWatch - Starter Plan
+
+Product Name (Customer-Facing):
+Starter
+
+Product Description (for Stripe Dashboard):
+Monitor up to 5 local competitors. Perfect for small businesses just 
+getting started with competitive intelligence. Includes instant email 
+alerts and daily price tracking.
+
+Statement Descriptor:
+COMPWATCH STARTER
+
+Public Description (Checkout/Portal):
+Everything you need to monitor your top competitors and stay ahead 
+of the market.
+Pricing Details
+Price: $49.00 USD / month
+Billing Period: Monthly (recurring)
+Currency: USD
+Trial Period: 14 days free trial
+Price ID Format: price_starter_monthly_49
+Feature List (for Pricing Page)
+✅ Monitor 5 competitors
+✅ Daily price tracking
+✅ Instant email alerts
+✅ Price change notifications
+✅ Promotion monitoring
+✅ 30-day price history
+✅ Mobile app access
+✅ Email support
+Stripe Metadata
+json{
+  "plan_name": "starter",
+  "competitor_limit": "5",
+  "features": "price_tracking,email_alerts,mobile_access",
+  "crawl_frequency": "daily",
+  "history_days": "30",
+  "support_level": "email",
+  "sms_alerts": "false",
+  "api_access": "false"
+}
+```
+
+---
+
+## 📦 Plan 2: Professional (Pro)
+
+### **Stripe Product Details**
+```
+Product Name (Internal):
+CompetitorWatch - Professional Plan
+
+Product Name (Customer-Facing):
+Professional
+
+Product Description (for Stripe Dashboard):
+Monitor up to 20 competitors with twice-daily tracking. Includes SMS 
+alerts, 90-day history, webhook integrations, and priority support. 
+Built for serious business owners who need real-time competitive intelligence.
+
+Statement Descriptor:
+COMPWATCH PRO
+
+Public Description (Checkout/Portal):
+Advanced monitoring for growing businesses that need to stay ahead 
+of multiple competitors with real-time alerts and integrations.
+```
+
+### **Pricing Details**
+```
+Price: $99.00 USD / month
+Billing Period: Monthly (recurring)
+Currency: USD
+Trial Period: 14 days free trial
+Price ID Format: price_pro_monthly_99
+
+Alternative Annual:
+Price: $948.00 USD / year ($79/month, save $240)
+Price ID Format: price_pro_annual_948
+```
+
+### **Feature List (for Pricing Page)**
+```
+✅ Monitor 20 competitors
+✅ Twice-daily tracking (every 12 hours)
+✅ Instant email + SMS alerts
+✅ 90-day price history
+✅ Advanced price analytics
+✅ Promotion tracking & alerts
+✅ Menu/service change detection
+✅ Webhook integrations (Slack, custom)
+✅ Weekly competitive reports
+✅ Mobile app access
+✅ Priority email support
+✅ Export data (CSV)
+Stripe Metadata
+json{
+  "plan_name": "professional",
+  "competitor_limit": "20",
+  "features": "price_tracking,email_alerts,sms_alerts,webhooks,analytics,mobile_access,csv_export",
+  "crawl_frequency": "twice_daily",
+  "history_days": "90",
+  "support_level": "priority_email",
+  "sms_alerts": "true",
+  "sms_limit_monthly": "100",
+  "api_access": "false",
+  "webhook_destinations": "5"
+}
+```
+
+---
+
+## 📦 Plan 3: Enterprise
+
+### **Stripe Product Details**
+```
+Product Name (Internal):
+CompetitorWatch - Enterprise Plan
+
+Product Name (Customer-Facing):
+Enterprise
+
+Product Description (for Stripe Dashboard):
+Unlimited competitor monitoring with hourly tracking across multiple 
+locations. Includes dedicated account manager, API access, custom 
+integrations, unlimited SMS alerts, and white-glove onboarding. 
+Perfect for multi-location businesses and franchises.
+
+Statement Descriptor:
+COMPWATCH ENTERPRISE
+
+Public Description (Checkout/Portal):
+Complete competitive intelligence solution for serious operators 
+managing multiple locations or needing enterprise-grade features 
+and support.
+```
+
+### **Pricing Details**
+```
+Price: $299.00 USD / month
+Billing Period: Monthly (recurring)
+Currency: USD
+Trial Period: 14 days free trial
+Price ID Format: price_enterprise_monthly_299
+
+Alternative Annual:
+Price: $2,988.00 USD / year ($249/month, save $600)
+Price ID Format: price_enterprise_annual_2988
+```
+
+### **Feature List (for Pricing Page)**
+```
+✅ Monitor UNLIMITED competitors
+✅ Hourly tracking (24x per day)
+✅ Multi-location support
+✅ Instant email + SMS alerts (unlimited)
+✅ Unlimited price history
+✅ Advanced competitive analytics
+✅ AI-powered insights & recommendations
+✅ Custom alert rules & triggers
+✅ Webhook integrations (unlimited)
+✅ REST API access
+✅ Custom data exports
+✅ Weekly executive reports
+✅ Slack/Teams/Discord integrations
+✅ Mobile app access
+✅ Dedicated account manager
+✅ Phone + email support
+✅ White-glove onboarding
+✅ Custom feature requests
+Stripe Metadata
+json{
+  "plan_name": "enterprise",
+  "competitor_limit": "unlimited",
+  "features": "price_tracking,email_alerts,sms_alerts,webhooks,analytics,mobile_access,csv_export,api_access,multi_location,ai_insights,custom_rules",
+  "crawl_frequency": "hourly",
+  "history_days": "unlimited",
+  "support_level": "dedicated_phone_email",
+  "sms_alerts": "true",
+  "sms_limit_monthly": "unlimited",
+  "api_access": "true",
+  "webhook_destinations": "unlimited",
+  "account_manager": "true"
+}
+```
+
+---
+
+## 💰 Add-Ons (Optional)
+
+### **Extra Competitors (for Starter/Pro)**
+```
+Product Name: Additional Competitors
+Description: Add extra competitor slots beyond your plan limit
+Price: $10.00 USD / month per 5 competitors
+Price ID Format: price_addon_competitors_5_10
+```
+
+### **SMS Alert Credits (for Starter)**
+```
+Product Name: SMS Alert Credits
+Description: Add SMS alert capability to your Starter plan
+Price: $15.00 USD / month (includes 150 SMS)
+Price ID Format: price_addon_sms_150_15
+```
+
+### **Priority Support Upgrade (for Starter)**
+```
+Product Name: Priority Support
+Description: Upgrade to priority email support with faster response times
+Price: $20.00 USD / month
+Price ID Format: price_addon_priority_support_20
+
+📋 Stripe Configuration Script
+Use this in your setup:
+typescript// /scripts/setup-stripe-products.ts
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: '2024-11-20.acacia',
+});
+
+async function setupStripeProducts() {
+  // 1. STARTER PLAN
+  const starterProduct = await stripe.products.create({
+    name: 'CompetitorWatch - Starter Plan',
+    description: 'Monitor up to 5 local competitors with daily price tracking and instant email alerts.',
+    metadata: {
+      plan_name: 'starter',
+      competitor_limit: '5',
+      features: 'price_tracking,email_alerts,mobile_access',
+      crawl_frequency: 'daily',
+      history_days: '30',
+      support_level: 'email',
+      sms_alerts: 'false',
+      api_access: 'false',
+    },
+  });
+
+  const starterPrice = await stripe.prices.create({
+    product: starterProduct.id,
+    unit_amount: 4900, // $49.00
+    currency: 'usd',
+    recurring: {
+      interval: 'month',
+      trial_period_days: 14,
+    },
+    nickname: 'Starter - Monthly',
+  });
+
+  console.log('✅ Starter Plan Created');
+  console.log('   Product ID:', starterProduct.id);
+  console.log('   Price ID:', starterPrice.id);
+
+  // 2. PROFESSIONAL PLAN
+  const proProduct = await stripe.products.create({
+    name: 'CompetitorWatch - Professional Plan',
+    description: 'Monitor up to 20 competitors with twice-daily tracking, SMS alerts, and webhook integrations.',
+    metadata: {
+      plan_name: 'professional',
+      competitor_limit: '20',
+      features: 'price_tracking,email_alerts,sms_alerts,webhooks,analytics,mobile_access,csv_export',
+      crawl_frequency: 'twice_daily',
+      history_days: '90',
+      support_level: 'priority_email',
+      sms_alerts: 'true',
+      sms_limit_monthly: '100',
+      api_access: 'false',
+      webhook_destinations: '5',
+    },
+  });
+
+  const proMonthlyPrice = await stripe.prices.create({
+    product: proProduct.id,
+    unit_amount: 9900, // $99.00
+    currency: 'usd',
+    recurring: {
+      interval: 'month',
+      trial_period_days: 14,
+    },
+    nickname: 'Professional - Monthly',
+  });
+
+  const proAnnualPrice = await stripe.prices.create({
+    product: proProduct.id,
+    unit_amount: 94800, // $948.00 ($79/month)
+    currency: 'usd',
+    recurring: {
+      interval: 'year',
+      trial_period_days: 14,
+    },
+    nickname: 'Professional - Annual (Save $240)',
+  });
+
+  console.log('✅ Professional Plan Created');
+  console.log('   Product ID:', proProduct.id);
+  console.log('   Monthly Price ID:', proMonthlyPrice.id);
+  console.log('   Annual Price ID:', proAnnualPrice.id);
+
+  // 3. ENTERPRISE PLAN
+  const enterpriseProduct = await stripe.products.create({
+    name: 'CompetitorWatch - Enterprise Plan',
+    description: 'Unlimited competitor monitoring with hourly tracking, API access, and dedicated support.',
+    metadata: {
+      plan_name: 'enterprise',
+      competitor_limit: 'unlimited',
+      features: 'price_tracking,email_alerts,sms_alerts,webhooks,analytics,mobile_access,csv_export,api_access,multi_location,ai_insights,custom_rules',
+      crawl_frequency: 'hourly',
+      history_days: 'unlimited',
+      support_level: 'dedicated_phone_email',
+      sms_alerts: 'true',
+      sms_limit_monthly: 'unlimited',
+      api_access: 'true',
+      webhook_destinations: 'unlimited',
+      account_manager: 'true',
+    },
+  });
+
+  const enterpriseMonthlyPrice = await stripe.prices.create({
+    product: enterpriseProduct.id,
+    unit_amount: 29900, // $299.00
+    currency: 'usd',
+    recurring: {
+      interval: 'month',
+      trial_period_days: 14,
+    },
+    nickname: 'Enterprise - Monthly',
+  });
+
+  const enterpriseAnnualPrice = await stripe.prices.create({
+    product: enterpriseProduct.id,
+    unit_amount: 298800, // $2,988.00 ($249/month)
+    currency: 'usd',
+    recurring: {
+      interval: 'year',
+      trial_period_days: 14,
+    },
+    nickname: 'Enterprise - Annual (Save $600)',
+  });
+
+  console.log('✅ Enterprise Plan Created');
+  console.log('   Product ID:', enterpriseProduct.id);
+  console.log('   Monthly Price ID:', enterpriseMonthlyPrice.id);
+  console.log('   Annual Price ID:', enterpriseAnnualPrice.id);
+
+  console.log('\n🎉 All Stripe products created successfully!');
+  console.log('\nAdd these to your .env:');
+  console.log(`STRIPE_STARTER_PRICE_ID=${starterPrice.id}`);
+  console.log(`STRIPE_PRO_MONTHLY_PRICE_ID=${proMonthlyPrice.id}`);
+  console.log(`STRIPE_PRO_ANNUAL_PRICE_ID=${proAnnualPrice.id}`);
+  console.log(`STRIPE_ENTERPRISE_MONTHLY_PRICE_ID=${enterpriseMonthlyPrice.id}`);
+  console.log(`STRIPE_ENTERPRISE_ANNUAL_PRICE_ID=${enterpriseAnnualPrice.id}`);
+}
+
+setupStripeProducts().catch(console.error);
+
+🎨 Pricing Page Copy
+Here's the marketing copy for your pricing page:
+tsx// /app/pricing/page.tsx
+
+const plans = [
+  {
+    name: 'Starter',
+    price: 49,
+    description: 'Perfect for small businesses monitoring key competitors',
+    cta: 'Start Free Trial',
+    features: [
+      '5 competitors',
+      'Daily price tracking',
+      'Email alerts',
+      '30-day history',
+      'Mobile access',
+      'Email support',
+    ],
+    popular: false,
+  },
+  {
+    name: 'Professional',
+    price: 99,
+    description: 'For growing businesses that need real-time intelligence',
+    cta: 'Start Free Trial',
+    features: [
+      '20 competitors',
+      'Twice-daily tracking',
+      'Email + SMS alerts',
+      '90-day history',
+      'Webhook integrations',
+      'Price analytics',
+      'Priority support',
+      'Data export',
+    ],
+    popular: true, // Badge: "Most Popular"
+  },
+  {
+    name: 'Enterprise',
+    price: 299,
+    description: 'Complete solution for multi-location operations',
+    cta: 'Start Free Trial',
+    features: [
+      'Unlimited competitors',
+      'Hourly tracking',
+      'Unlimited SMS alerts',
+      'API access',
+      'Multi-location support',
+      'AI-powered insights',
+      'Dedicated manager',
+      'Phone support',
+    ],
+    popular: false,
+  },
+];
+
+📊 Comparison Table
+FeatureStarterProfessionalEnterprisePrice$49/mo$99/mo$299/moCompetitors520UnlimitedTracking FrequencyDailyTwice-dailyHourlyPrice History30 days90 daysUnlimitedEmail Alerts✅✅✅SMS Alerts❌✅ (100/mo)✅ UnlimitedWebhooks❌✅ (5 max)✅ UnlimitedAPI Access❌❌✅Multi-Location❌❌✅AnalyticsBasicAdvancedAI-PoweredData Export❌CSVCSV + APISupportEmailPriority EmailPhone + Dedicated ManagerOnboardingSelf-serviceSelf-serviceWhite-glove
+
+💡 Conversion Tips for Stripe Checkout
+Checkout Session Configuration
+typescriptconst session = await stripe.checkout.sessions.create({
+  line_items: [
+    {
+      price: priceId,
+      quantity: 1,
+    },
+  ],
+  mode: 'subscription',
+  success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true&session_id={CHECKOUT_SESSION_ID}`,
+  cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`,
+  
+  // Pre-fill customer email
+  customer_email: user.email,
+  
+  // Allow promo codes
+  allow_promotion_codes: true,
+  
+  // Custom success message
+  success_message: "Welcome to CompetitorWatch! Your account is now active.",
+  
+  // Metadata for tracking
+  metadata: {
+    userId: user.id,
+    plan: planName,
+    source: 'pricing_page',
+  },
+  
+  // Enable tax calculation (if needed)
+  automatic_tax: { enabled: true },
+  
+  // Subscription behavior
+  subscription_data: {
+    metadata: {
+      userId: user.id,
+      plan: planName,
+    },
+    trial_period_days: 14,
+  },
+});
+
+🎯 Summary
+Copy these exact details into Stripe:
+
+Starter: $49/mo, 5 competitors, daily tracking
+Professional: $99/mo, 20 competitors, twice-daily + SMS
+Enterprise: $299/mo, unlimited, hourly + API
+
+All plans include:
+
+✅ 14-day free trial (no credit card for trial)
+✅ Cancel anytime
+✅ Mobile app access
+✅ Instant email alerts
+
+Use the setup script above to create everything programmatically, or manually add to Stripe Dashboard with the exact copy provided. 🚀

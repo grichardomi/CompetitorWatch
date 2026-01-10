@@ -1,10 +1,11 @@
 import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth/auth-options';
 import { db } from '@/lib/db/prisma';
 
 export async function GET() {
   try {
     // Check authentication
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }

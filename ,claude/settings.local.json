@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(find:*)",
+      "Bash(timeout 180 pnpm install:*)",
+      "Bash(pnpm db:generate:*)",
+      "Bash(pnpm db:push:*)",
+      "Bash(ls:*)",
+      "Bash(pnpm build:*)",
+      "Bash(cat:*)",
+      "Bash(pnpm dev:*)",
+      "Bash(curl:*)",
+      "Bash(pkill:*)",
+      "Bash(netstat:*)",
+      "Bash(kill:*)",
+      "Bash(pgrep:*)",
+      "Bash(pnpm remove:*)",
+      "Bash(pnpm add:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(psql:*)",
+      "Bash(PGPASSWORD=\"ciSKlvvohOuTavfTlVilAfmFeBZnKwXF\" psql:*)",
+      "Bash(npm ls:*)",
+      "Bash(npx tsc:*)",
+      "Bash(jq:*)",
+      "Bash(lsof:*)",
+      "Bash(npx prisma db push:*)",
+      "Bash(pnpm type-check:*)",
+      "Bash(export CRON_SECRET=\"test-cron-secret\" curl -s -H \"Authorization: Bearer test-cron-secret\" http://localhost:3004/api/cron/scheduler)",
+      "Bash(pnpm exec playwright install:*)",
+      "Bash(npm run:*)"
+    ]
+  }
+}

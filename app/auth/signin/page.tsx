@@ -5,12 +5,24 @@ import Link from 'next/link';
 import { signIn } from 'next-auth/react';
 import { useSearchParams } from 'next/navigation';
 
+const errorMessages: { [key: string]: string } = {
+  OAuthSignin: 'Unable to sign in with Google. Please try again.',
+  OAuthCallback: 'Google authentication failed. Please try again.',
+  OAuthCreateAccount: 'Could not create your account. Please try again.',
+  EmailCreateAccount: 'Could not create account. Please try again.',
+  Callback: 'Authentication error. Please try again.',
+  Default: 'An error occurred during sign in. Please try again.',
+};
+
 function SignInContent() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+  const urlError = searchParams.get('error');
 
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    urlError ? (errorMessages[urlError] || errorMessages.Default) : null
+  );
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);

@@ -5,10 +5,28 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
+interface DashboardStats {
+  competitorsCount: number;
+  alertsCount: number;
+  priceChangesCount: number;
+}
+
+interface Subscription {
+  status: string;
+  daysRemaining: number | null;
+  currentPeriodEnd: string;
+}
+
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [checkingStatus, setCheckingStatus] = useState(true);
+  const [stats, setStats] = useState<DashboardStats>({
+    competitorsCount: 0,
+    alertsCount: 0,
+    priceChangesCount: 0,
+  });
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -29,10 +47,51 @@ export default function Dashboard() {
         router.push('/onboarding');
       } else {
         setCheckingStatus(false);
+        // Fetch dashboard stats and subscription
+        fetchDashboardStats();
+        fetchSubscription();
       }
     } catch (err) {
       console.error('Failed to check onboarding status:', err);
       setCheckingStatus(false);
+    }
+  };
+
+  const fetchDashboardStats = async () => {
+    try {
+      // Fetch competitors
+      const competitorsRes = await fetch('/api/competitors');
+      const competitorsData = await competitorsRes.json();
+
+      // Fetch alerts
+      const alertsRes = await fetch('/api/alerts?isRead=false');
+      const alertsData = await alertsRes.json();
+
+      // Count price changes from alerts
+      const priceChanges = alertsData.alerts?.filter(
+        (alert: any) => alert.alertType === 'price_change'
+      ).length || 0;
+
+      setStats({
+        competitorsCount: competitorsData.currentCount || 0,
+        alertsCount: alertsData.total || 0,
+        priceChangesCount: priceChanges,
+      });
+    } catch (err) {
+      console.error('Failed to fetch dashboard stats:', err);
+    }
+  };
+
+  const fetchSubscription = async () => {
+    try {
+      const res = await fetch('/api/billing/subscription');
+      const data = await res.json();
+
+      if (data.hasSubscription) {
+        setSubscription(data.subscription);
+      }
+    } catch (err) {
+      console.error('Failed to fetch subscription:', err);
     }
   };
 
@@ -72,6 +131,9 @@ export default function Dashboard() {
               <Link href="/dashboard/alerts" className="text-gray-600 hover:text-gray-900 font-medium">
                 Alerts
               </Link>
+              <Link href="/dashboard/billing" className="text-gray-600 hover:text-gray-900 font-medium">
+                Billing
+              </Link>
               <Link href="/dashboard/settings" className="text-gray-600 hover:text-gray-900 font-medium">
                 Settings
               </Link>
@@ -81,7 +143,12 @@ export default function Dashboard() {
             <div className="flex items-center gap-4">
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-medium text-gray-900">{session.user?.name || session.user?.email}</p>
-                <p className="text-xs text-gray-600">On Trial</p>
+                <p className="text-xs text-gray-600">
+                  {subscription?.status === 'trialing' && 'On Trial'}
+                  {subscription?.status === 'active' && 'Active'}
+                  {subscription?.status === 'past_due' && 'Past Due'}
+                  {!subscription && 'Free'}
+                </p>
               </div>
               <button
                 onClick={() => signOut({ callbackUrl: '/' })}
@@ -96,6 +163,19 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 sm:px-6 py-8">
+        {/* Trial Expiration Banner */}
+        {subscription?.status === 'trialing' && subscription?.daysRemaining !== null && subscription.daysRemaining <= 7 && (
+          <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <p className="text-yellow-900 font-medium">
+              ⏰ Your trial ends in {subscription.daysRemaining} {subscription.daysRemaining === 1 ? 'day' : 'days'}.{' '}
+              <Link href="/dashboard/billing" className="underline hover:text-yellow-800">
+                Upgrade now
+              </Link>{' '}
+              to continue monitoring your competitors.
+            </p>
+          </div>
+        )}
+
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Welcome to your dashboard</h1>
@@ -107,9 +187,9 @@ export default function Dashboard() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {[
-            { label: 'Active Competitors', value: '0', color: 'bg-blue-50', icon: '📊' },
-            { label: 'Recent Alerts', value: '0', color: 'bg-green-50', icon: '🔔' },
-            { label: 'Price Changes', value: '0', color: 'bg-purple-50', icon: '💰' },
+            { label: 'Active Competitors', value: stats.competitorsCount.toString(), color: 'bg-blue-50', icon: '📊' },
+            { label: 'Unread Alerts', value: stats.alertsCount.toString(), color: 'bg-green-50', icon: '🔔' },
+            { label: 'Price Changes', value: stats.priceChangesCount.toString(), color: 'bg-purple-50', icon: '💰' },
           ].map((stat, idx) => (
             <div key={idx} className={`${stat.color} rounded-lg p-6 border border-gray-200`}>
               <div className="flex items-center justify-between">
@@ -176,12 +256,17 @@ export default function Dashboard() {
             { label: 'Dashboard', href: '/dashboard', icon: '📊' },
             { label: 'Competitors', href: '/dashboard/competitors', icon: '👥' },
             { label: 'Alerts', href: '/dashboard/alerts', icon: '🔔' },
+            { label: 'Billing', href: '/dashboard/billing', icon: '💳' },
             { label: 'Settings', href: '/dashboard/settings', icon: '⚙️' },
           ].map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="flex flex-col items-center py-3 px-4 text-xs font-medium text-gray-600 hover:text-blue-600"
+              className={`flex flex-col items-center py-3 px-4 text-xs font-medium ${
+                item.href === '/dashboard'
+                  ? 'text-blue-600'
+                  : 'text-gray-600 hover:text-blue-600'
+              }`}
             >
               <span className="text-lg mb-1">{item.icon}</span>
               {item.label}
