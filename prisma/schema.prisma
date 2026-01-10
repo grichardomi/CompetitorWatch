@@ -1,0 +1,337 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// AUTHENTICATION (NextAuth.js)
+// ============================================================================
+
+model User {
+  id                    Int       @id @default(autoincrement())
+  email                 String    @unique
+  name                  String?
+  emailVerified         DateTime?
+  image                 String?
+  stripeCustomerId      String?   @unique
+  onboardingCompletedAt DateTime?
+  trialStartedAt        DateTime  @default(now())
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  // Relations
+  accounts                Account[]
+  sessions                Session[]
+  businesses              Business[]
+  subscriptions           Subscription[]
+  payments                Payment[]
+  notificationPreferences NotificationPreferences?
+  emailQueue              EmailQueue[]
+  smsQueue                SmsQueue[]
+  webhookDestinations     WebhookDestination[]
+
+  @@index([email])
+  @@index([stripeCustomerId])
+}
+
+model Account {
+  id                 Int     @id @default(autoincrement())
+  userId             Int
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String? @db.Text
+  access_token       String? @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String? @db.Text
+  session_state      String?
+  user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           Int       @id @default(autoincrement())
+  sessionToken String    @unique
+  userId       Int
+  expires      DateTime
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String    @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================================================================
+// BILLING & PAYMENTS
+// ============================================================================
+
+model Subscription {
+  id                    Int       @id @default(autoincrement())
+  userId                Int
+  stripeSubscriptionId  String    @unique
+  stripePriceId         String
+  status                String    // 'active', 'canceled', 'past_due', 'trialing'
+  currentPeriodStart    DateTime
+  currentPeriodEnd      DateTime
+  cancelAtPeriodEnd     Boolean   @default(false)
+  competitorLimit       Int       @default(10)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([stripeSubscriptionId])
+}
+
+model Payment {
+  id                    Int       @id @default(autoincrement())
+  userId                Int
+  stripePaymentIntentId String    @unique
+  amount                Int       // in cents
+  currency              String    @default("usd")
+  status                String    // 'succeeded', 'failed', 'pending'
+  createdAt             DateTime  @default(now())
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model WebhookEvent {
+  id          Int       @id @default(autoincrement())
+  source      String    // 'stripe', 'user_webhook'
+  eventType   String
+  payload     Json
+  processed   Boolean   @default(false)
+  processedAt DateTime?
+  error       String?
+  createdAt   DateTime  @default(now())
+
+  @@index([eventType])
+  @@index([processed])
+}
+
+// ============================================================================
+// BUSINESS & COMPETITOR MONITORING
+// ============================================================================
+
+model Business {
+  id                  Int       @id @default(autoincrement())
+  userId              Int
+  name                String
+  location            String
+  latitude            Decimal?  @db.Decimal(10, 8)
+  longitude           Decimal?  @db.Decimal(11, 8)
+  monitoringRadiusKm  Decimal   @default(3.0) @db.Decimal(5, 2)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Relations
+  competitors         Competitor[]
+  alerts              Alert[]
+  webhookDestinations WebhookDestination[]
+
+  @@index([userId])
+}
+
+model Competitor {
+  id                  Int       @id @default(autoincrement())
+  businessId          Int
+  name                String
+  url                 String
+  contentHash         String?
+  textHash            String?
+  lastCrawledAt       DateTime?
+  crawlFrequencyMinutes Int     @default(720) // 12 hours
+  isActive            Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  business            Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  // Relations
+  priceSnapshots      PriceSnapshot[]
+  alerts              Alert[]
+
+  @@unique([businessId, url])
+  @@index([businessId])
+  @@index([isActive])
+}
+
+model PriceSnapshot {
+  id              Int       @id @default(autoincrement())
+  competitorId    Int
+  extractedData   Json      // {prices: [], promotions: [], menu_items: []}
+  snapshotHash    String
+  detectedAt      DateTime  @default(now())
+  competitor      Competitor @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+
+  @@index([competitorId])
+  @@index([detectedAt])
+}
+
+model Alert {
+  id              Int       @id @default(autoincrement())
+  businessId      Int
+  competitorId    Int?
+  alertType       String    // 'price_change', 'new_promotion', 'menu_change'
+  message         String
+  details         Json?
+  isRead          Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  business        Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  competitor      Competitor? @relation(fields: [competitorId], references: [id], onDelete: SetNull)
+
+  // Relations
+  webhookDeliveries WebhookDelivery[]
+
+  @@index([businessId])
+  @@index([competitorId])
+  @@index([isRead])
+}
+
+// ============================================================================
+// WEBHOOKS (OUTGOING)
+// ============================================================================
+
+model WebhookDestination {
+  id              Int       @id @default(autoincrement())
+  businessId      Int
+  userId          Int
+  url             String
+  secret          String    // for HMAC signing
+  events          String[]  @default(["price_change", "new_promotion", "menu_change"])
+  isActive        Boolean   @default(true)
+  lastSuccessAt   DateTime?
+  lastFailureAt   DateTime?
+  failureCount    Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  business        Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Relations
+  deliveries      WebhookDelivery[]
+
+  @@index([businessId])
+  @@index([isActive])
+}
+
+model WebhookDelivery {
+  id                    Int       @id @default(autoincrement())
+  webhookDestinationId  Int
+  alertId               Int?
+  status                String    // 'success', 'failed', 'pending'
+  statusCode            Int?
+  responseBody          String?   @db.Text
+  attemptNumber         Int       @default(1)
+  deliveredAt           DateTime  @default(now())
+  webhookDestination    WebhookDestination @relation(fields: [webhookDestinationId], references: [id], onDelete: Cascade)
+  alert                 Alert?    @relation(fields: [alertId], references: [id], onDelete: SetNull)
+
+  @@index([webhookDestinationId])
+  @@index([alertId])
+}
+
+// ============================================================================
+// NOTIFICATIONS & PREFERENCES
+// ============================================================================
+
+model NotificationPreferences {
+  id                  Int       @id @default(autoincrement())
+  userId              Int       @unique
+  emailEnabled        Boolean   @default(true)
+  emailFrequency      String    @default("instant") // 'instant', 'hourly', 'daily', 'weekly'
+  smsEnabled          Boolean   @default(false)
+  smsPhoneNumber      String?
+  smsVerified         Boolean   @default(false)
+  alertTypes          Json      @default("[\"price_change\", \"new_promotion\", \"menu_change\"]")
+  quietHoursStart     DateTime? @db.Time()
+  quietHoursEnd       DateTime? @db.Time()
+  timezone            String    @default("America/New_York")
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ============================================================================
+// QUEUES (UNLOGGED Tables for High Performance)
+// ============================================================================
+
+model EmailQueue {
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  toEmail       String
+  templateName  String
+  templateData  Json
+  status        String    @default("pending") // 'pending', 'sent', 'failed'
+  attempts      Int       @default(0)
+  maxAttempts   Int       @default(3)
+  scheduledFor  DateTime  @default(now())
+  sentAt        DateTime?
+  error         String?
+  createdAt     DateTime  @default(now())
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([scheduledFor])
+}
+
+model SmsQueue {
+  id            Int       @id @default(autoincrement())
+  userId        Int
+  phoneNumber   String
+  message       String
+  status        String    @default("pending")
+  attempts      Int       @default(0)
+  maxAttempts   Int       @default(3)
+  scheduledFor  DateTime  @default(now())
+  sentAt        DateTime?
+  error         String?
+  createdAt     DateTime  @default(now())
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([scheduledFor])
+}
+
+model CrawlQueue {
+  id            Int       @id @default(autoincrement())
+  competitorId  Int
+  url           String
+  priority      Int       @default(0)
+  attempt       Int       @default(0)
+  maxAttempts   Int       @default(3)
+  scheduledFor  DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+
+  @@index([priority])
+  @@index([scheduledFor])
+}
+
+model RateLimit {
+  domain        String    @unique
+  requestCount  Int       @default(0)
+  windowStart   DateTime  @default(now())
+}
+
+model ExtractionCache {
+  contentHash   String    @unique
+  extractedData Json
+  createdAt     DateTime  @default(now())
+}
