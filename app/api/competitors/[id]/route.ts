@@ -5,10 +5,12 @@ import { updateCompetitorSchema } from '@/lib/validation/competitor';
 import { normalizeUrl } from '@/lib/utils/format';
 
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -27,7 +29,7 @@ export async function GET(
     // Get competitor and verify ownership
     const competitor = await db.competitor.findFirst({
       where: {
-        id: parseInt(params.id),
+        id: parseInt(id),
         business: { userId: user.id },
       },
       include: {
@@ -62,9 +64,11 @@ export async function GET(
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -83,7 +87,7 @@ export async function PATCH(
     // Get competitor and verify ownership
     const competitor = await db.competitor.findFirst({
       where: {
-        id: parseInt(params.id),
+        id: parseInt(id),
         business: { userId: user.id },
       },
     });
@@ -150,10 +154,12 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  req: Request,
-  { params }: { params: { id: string } }
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -172,7 +178,7 @@ export async function DELETE(
     // Get competitor and verify ownership
     const competitor = await db.competitor.findFirst({
       where: {
-        id: parseInt(params.id),
+        id: parseInt(id),
         business: { userId: user.id },
       },
       include: {

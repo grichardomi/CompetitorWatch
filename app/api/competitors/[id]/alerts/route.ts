@@ -4,9 +4,11 @@ import { db } from '@/lib/db/prisma';
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
+
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -25,7 +27,7 @@ export async function GET(
     // Verify competitor ownership
     const competitor = await db.competitor.findFirst({
       where: {
-        id: parseInt(params.id),
+        id: parseInt(id),
         business: { userId: user.id },
       },
     });

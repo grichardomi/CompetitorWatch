@@ -9,7 +9,7 @@ import { getDashboardUrl } from '@/lib/config/env';
  * Send a test email to the authenticated user
  * POST /api/notifications/test-email
  */
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     // Check authentication
     const session = await getServerSession(authOptions);

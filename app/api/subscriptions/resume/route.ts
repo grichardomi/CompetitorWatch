@@ -7,7 +7,7 @@ import { db } from '@/lib/db/prisma';
  * POST /api/subscriptions/resume
  * Resume a paused subscription
  */
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 

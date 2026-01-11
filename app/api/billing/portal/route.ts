@@ -4,7 +4,7 @@ import { db } from '@/lib/db/prisma';
 import { stripe } from '@/lib/stripe/config';
 import { getDashboardUrl } from '@/lib/config/env';
 
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   try {
     // Check authentication
     const session = await getServerSession(authOptions);

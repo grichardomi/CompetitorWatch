@@ -8,10 +8,10 @@ import { getQueueStats, getCompetitorsDue } from '@/services/scheduler';
  * Queue status monitoring endpoint
  * Returns current queue state and recent crawl history
  */
-export async function GET(req: NextRequest) {
+export async function GET(_req: NextRequest) {
   try {
     // Verify authentication (optional - allow public access for now, but could require auth)
-    const session = await getServerSession(authOptions);
+    const _session = await getServerSession(authOptions);
 
     // Get queue statistics
     const queueStats = await getQueueStats();

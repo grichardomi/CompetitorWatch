@@ -4,7 +4,7 @@ import { renderEmailTemplate, generateSubject } from '@/lib/email/render';
 import { sendEmail } from '@/lib/email/client';
 import { getDashboardUrl, TRIAL_CONFIG } from '@/lib/config/env';
 
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   try {
     // Check authentication
     const session = await getServerSession();
