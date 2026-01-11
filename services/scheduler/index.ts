@@ -15,9 +15,12 @@ export async function enqueueJobs(): Promise<SchedulerResult> {
 
   try {
     // Find active competitors that are due for crawling
+    // Only include competitors from users with active subscriptions
     const dueCompetitors = await db.$queryRaw<any[]>`
       SELECT c.id, c.url, c."crawlFrequencyMinutes", c."lastCrawledAt"
       FROM "Competitor" c
+      INNER JOIN "Business" b ON c."businessId" = b.id
+      INNER JOIN "Subscription" s ON s."userId" = b."userId"
       WHERE c."isActive" = true
         AND (
           c."lastCrawledAt" IS NULL
@@ -26,6 +29,13 @@ export async function enqueueJobs(): Promise<SchedulerResult> {
         AND NOT EXISTS (
           SELECT 1 FROM "CrawlQueue" cq
           WHERE cq."competitorId" = c.id
+        )
+        -- Only include active subscriptions
+        AND s.status IN ('trialing', 'active')
+        -- Check that trials are not expired
+        AND (
+          s.status != 'trialing'
+          OR s."currentPeriodEnd" > NOW()
         )
       ORDER BY c."lastCrawledAt" ASC NULLS FIRST
       LIMIT 100
@@ -146,10 +156,19 @@ export async function getCompetitorsDue(limit: number = 10): Promise<any[]> {
     const due = await db.$queryRaw<any[]>`
       SELECT c.id, c.name, c.url, c."lastCrawledAt", c."crawlFrequencyMinutes"
       FROM "Competitor" c
+      INNER JOIN "Business" b ON c."businessId" = b.id
+      INNER JOIN "Subscription" s ON s."userId" = b."userId"
       WHERE c."isActive" = true
         AND (
           c."lastCrawledAt" IS NULL
           OR c."lastCrawledAt" + (c."crawlFrequencyMinutes" * INTERVAL '1 minute') < NOW()
+        )
+        -- Only include active subscriptions
+        AND s.status IN ('trialing', 'active')
+        -- Check that trials are not expired
+        AND (
+          s.status != 'trialing'
+          OR s."currentPeriodEnd" > NOW()
         )
       ORDER BY c."lastCrawledAt" ASC NULLS FIRST
       LIMIT ${limit}

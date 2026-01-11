@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth/auth-options';
 import { db } from '@/lib/db/prisma';
 import { createCompetitorSchema } from '@/lib/validation/competitor';
 import { normalizeUrl } from '@/lib/utils/format';
+import { canAddCompetitor } from '@/lib/middleware/check-subscription';
 
 export async function GET() {
   try {
@@ -93,22 +94,16 @@ export async function POST(req: Request) {
 
     const business = user.businesses[0];
 
-    // Get user's subscription
-    const subscription = await db.subscription.findFirst({
-      where: { userId: user.id },
-      orderBy: { createdAt: 'desc' },
-    });
+    // Check if user can add a competitor (validates subscription status and limit)
+    const canAdd = await canAddCompetitor(user.id);
 
-    const limit = subscription?.competitorLimit || 5;
-
-    // Check current competitor count
-    const currentCount = await db.competitor.count({
-      where: { businessId: business.id },
-    });
-
-    if (currentCount >= limit) {
+    if (!canAdd.allowed) {
       return Response.json(
-        { error: `Competitor limit reached for ${plan} plan` },
+        {
+          error: canAdd.error,
+          limit: canAdd.limit,
+          current: canAdd.current,
+        },
         { status: 403 }
       );
     }

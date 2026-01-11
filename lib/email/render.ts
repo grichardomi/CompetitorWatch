@@ -42,8 +42,16 @@ export async function renderEmailTemplate({
       };
     }
 
-    // Render React component to HTML
-    const html = render(TemplateComponent(templateData));
+    // Render React component to HTML (await the Promise)
+    const html = await render(TemplateComponent(templateData));
+
+    // Ensure html is a string
+    if (typeof html !== 'string') {
+      return {
+        success: false,
+        error: `Email render returned ${typeof html} instead of string`,
+      };
+    }
 
     return {
       success: true,

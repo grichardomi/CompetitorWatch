@@ -26,7 +26,7 @@
 import { headers } from 'next/headers';
 import { stripe, getCompetitorLimitFromPriceId } from '@/lib/stripe/config';
 import { db } from '@/lib/db/prisma';
-import { sendEmail } from '@/lib/email/send';
+import { sendEmail } from '@/lib/email/client';
 import Stripe from 'stripe';
 
 export async function POST(req: Request) {

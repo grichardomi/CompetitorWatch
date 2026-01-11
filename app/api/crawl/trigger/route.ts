@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth-options';
 import { db } from '@/lib/db/prisma';
+import { requireActiveSubscription } from '@/lib/middleware/check-subscription';
 
 /**
  * Manual crawl trigger endpoint
@@ -22,6 +23,18 @@ export async function POST(req: NextRequest) {
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Check if user has an active subscription
+    const subscriptionCheck = await requireActiveSubscription(user.id);
+    if (!subscriptionCheck.valid) {
+      return NextResponse.json(
+        {
+          error: subscriptionCheck.error,
+          errorCode: subscriptionCheck.errorCode,
+        },
+        { status: 403 }
+      );
     }
 
     // Parse request body
