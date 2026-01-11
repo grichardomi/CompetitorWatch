@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db/prisma';
 import { sendEmail } from '@/lib/email/client';
 import { renderEmailTemplate, generateSubject } from '@/lib/email/render';
+import { getDashboardUrl, TRIAL_CONFIG } from '@/lib/config/env';
 
 const CRON_SECRET = process.env.CRON_SECRET;
 
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const now = new Date();
-    const gracePeriodDays = 3;
+    const gracePeriodDays = TRIAL_CONFIG.gracePeriodDays;
 
     // STEP 1: Transition trials to grace period
     // Find trials that have ended (local trials only, not Stripe-managed)
@@ -88,7 +89,7 @@ export async function GET(request: NextRequest) {
             templateName: 'trial_ended',
             templateData: {
               userName: trial.user.name || 'there',
-              dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
+              dashboardUrl: getDashboardUrl('/dashboard'),
               gracePeriodDays,
             },
           });
@@ -168,7 +169,7 @@ export async function GET(request: NextRequest) {
             templateName: 'grace_period_ended',
             templateData: {
               userName: gracePeriod.user.name || 'there',
-              dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
+              dashboardUrl: getDashboardUrl('/dashboard'),
             },
           });
 

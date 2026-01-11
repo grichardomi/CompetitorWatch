@@ -18,7 +18,7 @@ interface GracePeriodEndedProps {
 
 export default function GracePeriodEnded({
   userName = 'there',
-  dashboardUrl = 'http://localhost:3000/dashboard',
+  dashboardUrl = 'https://app.competitorwatch.com/dashboard',
 }: GracePeriodEndedProps) {
   return (
     <Html>

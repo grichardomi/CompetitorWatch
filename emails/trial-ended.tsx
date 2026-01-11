@@ -19,7 +19,7 @@ interface TrialEndedProps {
 
 export default function TrialEnded({
   userName = 'there',
-  dashboardUrl = 'http://localhost:3000/dashboard',
+  dashboardUrl = 'https://app.competitorwatch.com/dashboard',
   gracePeriodDays = 3,
 }: TrialEndedProps) {
   return (

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth-options';
 import { db } from '@/lib/db/prisma';
+import { STRIPE_CONFIG } from '@/lib/config/env';
 
 /**
  * POST /api/admin/trials/convert
@@ -49,11 +50,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Map plan IDs to limits (should match your pricing)
+    // Map plan IDs to limits from environment configuration
     const planConfig: Record<string, { limit: number; name: string }> = {
-      price_starter: { limit: 5, name: 'Starter' },
-      price_professional: { limit: 20, name: 'Professional' },
-      price_enterprise: { limit: 100, name: 'Enterprise' },
+      [STRIPE_CONFIG.plans.starter.priceId]: {
+        limit: STRIPE_CONFIG.plans.starter.competitorLimit,
+        name: STRIPE_CONFIG.plans.starter.name,
+      },
+      [STRIPE_CONFIG.plans.professional.priceId]: {
+        limit: STRIPE_CONFIG.plans.professional.competitorLimit,
+        name: STRIPE_CONFIG.plans.professional.name,
+      },
+      [STRIPE_CONFIG.plans.enterprise.priceId]: {
+        limit: STRIPE_CONFIG.plans.enterprise.competitorLimit,
+        name: STRIPE_CONFIG.plans.enterprise.name,
+      },
     };
 
     const config = planConfig[planId];
