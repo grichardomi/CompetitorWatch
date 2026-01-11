@@ -47,6 +47,8 @@ export default function SubscriptionDetailsPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [actionLoading, setActionLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -88,10 +90,55 @@ export default function SubscriptionDetailsPage() {
     fetchData();
   }, [subscriptionId]);
 
+  const handlePause = async () => {
+    if (!subscription || !confirm('Are you sure you want to pause this subscription?')) return;
+
+    setActionLoading(true);
+    try {
+      const res = await fetch('/api/admin/subscriptions/pause', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscriptionId: subscription.id }),
+      });
+
+      if (!res.ok) throw new Error('Failed to pause');
+
+      setMessage({ type: 'success', text: 'Subscription paused successfully' });
+      window.location.reload();
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Failed to pause subscription' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleResume = async () => {
+    if (!subscription || !confirm('Are you sure you want to resume this subscription?')) return;
+
+    setActionLoading(true);
+    try {
+      const res = await fetch('/api/admin/subscriptions/resume', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscriptionId: subscription.id }),
+      });
+
+      if (!res.ok) throw new Error('Failed to resume');
+
+      setMessage({ type: 'success', text: 'Subscription resumed successfully' });
+      window.location.reload();
+    } catch (error) {
+      setMessage({ type: 'error', text: 'Failed to resume subscription' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
       active: 'bg-green-100 text-green-800',
       trialing: 'bg-blue-100 text-blue-800',
+      paused: 'bg-purple-100 text-purple-800',
       past_due: 'bg-yellow-100 text-yellow-800',
       canceled: 'bg-red-100 text-red-800',
       succeeded: 'bg-green-100 text-green-800',
@@ -137,6 +184,14 @@ export default function SubscriptionDetailsPage() {
         <h1 className="text-2xl font-bold text-gray-900">Subscription Details</h1>
         <p className="text-gray-600 mt-1">{subscription.planName} - {subscription.user.email}</p>
       </div>
+
+      {/* Message */}
+      {message && (
+        <div className={`mb-6 p-4 rounded-lg ${message.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+          {message.text}
+          <button onClick={() => setMessage(null)} className="ml-4 underline">Dismiss</button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Subscription Info */}
@@ -187,18 +242,38 @@ export default function SubscriptionDetailsPage() {
           </div>
 
           {/* Actions */}
-          {subscription.stripeSubscriptionId && subscription.stripeSubscriptionId !== `trial_${subscription.userId}` && (
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <a
-                href={`https://dashboard.stripe.com/subscriptions/${subscription.stripeSubscriptionId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
-              >
-                View in Stripe Dashboard
-              </a>
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <div className="flex flex-wrap gap-3">
+              {subscription.status === 'active' && subscription.stripePriceId !== 'trial' && (
+                <button
+                  onClick={handlePause}
+                  disabled={actionLoading}
+                  className="px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                >
+                  {actionLoading ? 'Pausing...' : 'Pause Subscription'}
+                </button>
+              )}
+              {subscription.status === 'paused' && (
+                <button
+                  onClick={handleResume}
+                  disabled={actionLoading}
+                  className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:opacity-50"
+                >
+                  {actionLoading ? 'Resuming...' : 'Resume Subscription'}
+                </button>
+              )}
+              {subscription.stripeSubscriptionId && subscription.stripeSubscriptionId !== `trial_${subscription.userId}` && (
+                <a
+                  href={`https://dashboard.stripe.com/subscriptions/${subscription.stripeSubscriptionId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700"
+                >
+                  View in Stripe Dashboard
+                </a>
+              )}
             </div>
-          )}
+          </div>
         </div>
 
         {/* User Info */}

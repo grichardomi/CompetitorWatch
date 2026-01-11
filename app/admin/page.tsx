@@ -317,6 +317,36 @@ export default function AdminPage() {
               </div>
             </Link>
           </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+            <Link href="/admin/trials">
+              <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow cursor-pointer">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <span className="text-2xl">🎯</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Trial Management</h3>
+                    <p className="text-sm text-gray-600">Manage and convert trials</p>
+                  </div>
+                </div>
+              </div>
+            </Link>
+
+            <Link href="/admin/analytics">
+              <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg transition-shadow cursor-pointer">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center">
+                    <span className="text-2xl">📊</span>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Analytics</h3>
+                    <p className="text-sm text-gray-600">Trial conversion metrics</p>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          </div>
         </>
       )}
     </main>
