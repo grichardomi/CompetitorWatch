@@ -30,12 +30,11 @@ export async function enqueueJobs(): Promise<SchedulerResult> {
           SELECT 1 FROM "CrawlQueue" cq
           WHERE cq."competitorId" = c.id
         )
-        -- Only include active subscriptions
-        AND s.status IN ('trialing', 'active')
-        -- Check that trials are not expired
+        -- Include active, trialing (not expired), and grace_period
         AND (
-          s.status != 'trialing'
-          OR s."currentPeriodEnd" > NOW()
+          s.status = 'active'
+          OR (s.status = 'trialing' AND s."currentPeriodEnd" > NOW())
+          OR (s.status = 'grace_period' AND s."currentPeriodEnd" + INTERVAL '3 days' > NOW())
         )
       ORDER BY c."lastCrawledAt" ASC NULLS FIRST
       LIMIT 100
@@ -163,12 +162,11 @@ export async function getCompetitorsDue(limit: number = 10): Promise<any[]> {
           c."lastCrawledAt" IS NULL
           OR c."lastCrawledAt" + (c."crawlFrequencyMinutes" * INTERVAL '1 minute') < NOW()
         )
-        -- Only include active subscriptions
-        AND s.status IN ('trialing', 'active')
-        -- Check that trials are not expired
+        -- Include active, trialing (not expired), and grace_period
         AND (
-          s.status != 'trialing'
-          OR s."currentPeriodEnd" > NOW()
+          s.status = 'active'
+          OR (s.status = 'trialing' AND s."currentPeriodEnd" > NOW())
+          OR (s.status = 'grace_period' AND s."currentPeriodEnd" + INTERVAL '3 days' > NOW())
         )
       ORDER BY c."lastCrawledAt" ASC NULLS FIRST
       LIMIT ${limit}

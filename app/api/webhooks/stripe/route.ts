@@ -7,6 +7,7 @@
  * - checkout.session.completed: Customer completes checkout, creates subscription
  * - customer.subscription.created/updated: Subscription changes (upgrades, downgrades, renewals)
  * - customer.subscription.deleted: Subscription canceled
+ * - customer.subscription.trial_will_end: Trial ending soon (3 days before), sends urgent upgrade email
  * - invoice.payment_succeeded: Successful payment, creates payment record
  * - invoice.payment_failed: Failed payment, sends alert email
  *
@@ -116,6 +117,12 @@ export async function POST(req: Request) {
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice;
         await handlePaymentFailed(invoice);
+        break;
+      }
+
+      case 'customer.subscription.trial_will_end': {
+        const subscription = event.data.object as Stripe.Subscription;
+        await handleTrialWillEnd(subscription);
         break;
       }
 
@@ -401,6 +408,119 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
     });
   } catch (emailError) {
     console.error('Failed to send payment failure email:', emailError);
+    // Don't throw - we still want to process the webhook
+  }
+}
+
+async function handleTrialWillEnd(subscription: Stripe.Subscription) {
+  const customerId = subscription.customer as string;
+
+  const user = await db.user.findUnique({
+    where: { stripeCustomerId: customerId },
+    select: { id: true, email: true, name: true },
+  });
+
+  if (!user) {
+    console.error('User not found for trial_will_end:', customerId);
+    return;
+  }
+
+  // Get trial end date
+  const trialEnd = subscription.trial_end
+    ? new Date(subscription.trial_end * 1000)
+    : null;
+
+  if (!trialEnd) {
+    console.error('No trial end date for subscription:', subscription.id);
+    return;
+  }
+
+  const daysRemaining = Math.ceil((trialEnd.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+
+  console.log(`Trial will end soon for user ${user.id} (${user.email}) - ${daysRemaining} days remaining`);
+
+  // Send urgent upgrade email
+  try {
+    await sendEmail({
+      to: user.email,
+      subject: `⏰ Your trial ends in ${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'}!`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 8px; text-align: center; color: white; margin-bottom: 30px;">
+            <h1 style="margin: 0; font-size: 32px;">⏰ Time is Running Out!</h1>
+            <p style="margin: 10px 0 0 0; font-size: 18px;">Your trial ends in ${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'}</p>
+          </div>
+
+          <div style="padding: 0 20px;">
+            <p style="font-size: 16px; line-height: 1.6; color: #374151;">Hi ${user.name || 'there'},</p>
+
+            <p style="font-size: 16px; line-height: 1.6; color: #374151;">
+              Your <strong>14-day free trial</strong> of CompetitorWatch is coming to an end soon.
+              Don't lose access to your competitive intelligence!
+            </p>
+
+            <div style="background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 20px; margin: 30px 0; border-radius: 4px;">
+              <p style="margin: 0; color: #991b1b; font-weight: 600; font-size: 16px;">
+                ⚠️ After your trial ends, you'll lose access to:
+              </p>
+              <ul style="margin: 10px 0 0 0; padding-left: 20px; color: #991b1b;">
+                <li>Real-time competitor monitoring</li>
+                <li>Automatic price change alerts</li>
+                <li>Historical tracking data</li>
+                <li>All your saved competitors</li>
+              </ul>
+            </div>
+
+            <div style="background-color: #f0fdf4; padding: 25px; margin: 30px 0; border-radius: 8px; border: 1px solid #86efac;">
+              <p style="margin: 0 0 15px 0; color: #166534; font-weight: 600; font-size: 18px;">
+                ✨ Continue monitoring your competitors for just $49/month
+              </p>
+              <ul style="margin: 0; padding-left: 20px; color: #166534;">
+                <li>Monitor up to 5 competitors</li>
+                <li>Daily automatic tracking</li>
+                <li>Instant email alerts</li>
+                <li>Price history & insights</li>
+              </ul>
+            </div>
+
+            <div style="text-align: center; margin: 40px 0;">
+              <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing"
+                 style="background-color: #2563eb; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 18px; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);">
+                Upgrade Now & Save Your Data
+              </a>
+            </div>
+
+            <div style="background-color: #fef9c3; padding: 20px; margin: 30px 0; border-radius: 8px; text-align: center; border: 1px solid #fde047;">
+              <p style="margin: 0; color: #854d0e; font-weight: 600; font-size: 16px;">
+                🎁 Special Offer: Use code <span style="background-color: #fef3c7; padding: 4px 12px; border-radius: 4px; font-family: monospace;">TRIAL20</span> for 20% off your first month!
+              </p>
+            </div>
+
+            <p style="font-size: 16px; line-height: 1.6; color: #374151;">
+              Have questions? Just reply to this email and we'll help you choose the right plan.
+            </p>
+
+            <p style="font-size: 16px; line-height: 1.6; color: #374151;">
+              Thanks for trying CompetitorWatch!<br>
+              The CompetitorWatch Team
+            </p>
+          </div>
+
+          <div style="text-align: center; padding: 30px 20px 20px; border-top: 1px solid #e5e7eb; margin-top: 40px;">
+            <p style="color: #9ca3af; font-size: 14px; margin: 0;">
+              CompetitorWatch - Stay ahead of your competition
+            </p>
+            <p style="color: #9ca3af; font-size: 12px; margin: 10px 0 0 0;">
+              <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings" style="color: #2563eb; text-decoration: none;">Notification Settings</a>
+            </p>
+          </div>
+        </div>
+      `,
+    });
+
+    console.log(`Sent trial_will_end email to ${user.email}`);
+  } catch (emailError) {
+    console.error('Failed to send trial_will_end email:', emailError);
     // Don't throw - we still want to process the webhook
   }
 }

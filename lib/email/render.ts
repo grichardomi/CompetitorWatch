@@ -4,6 +4,7 @@ import WelcomeEmail from '@/emails/welcome-email';
 import TrialDay7Reminder from '@/emails/trial-day7-reminder';
 import TrialDay11Reminder from '@/emails/trial-day11-reminder';
 import TrialEnded from '@/emails/trial-ended';
+import GracePeriodEnded from '@/emails/grace-period-ended';
 
 interface RenderEmailParams {
   templateName: string;
@@ -31,6 +32,7 @@ export async function renderEmailTemplate({
       trial_day7_reminder: TrialDay7Reminder,
       trial_day11_reminder: TrialDay11Reminder,
       trial_ended: TrialEnded,
+      grace_period_ended: GracePeriodEnded,
     };
 
     const TemplateComponent = templates[templateName];
@@ -78,6 +80,7 @@ export function generateSubject(alertType: string, competitorName?: string): str
     trial_day7_reminder: 'Halfway through your trial',
     trial_day11_reminder: 'Your trial ends in 3 days',
     trial_ended: 'Your trial has ended',
+    grace_period_ended: 'Your CompetitorWatch access has expired',
   };
 
   return subjects[alertType] || (competitorName ? `Update at ${competitorName}` : 'CompetitorWatch Update');

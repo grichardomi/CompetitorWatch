@@ -4,18 +4,25 @@ export interface SubscriptionValidationResult {
   valid: boolean;
   subscription?: any;
   error?: string;
-  errorCode?: 'NO_SUBSCRIPTION' | 'TRIAL_EXPIRED' | 'SUBSCRIPTION_INACTIVE' | 'SUBSCRIPTION_CANCELED';
+  errorCode?: 'NO_SUBSCRIPTION' | 'TRIAL_EXPIRED' | 'GRACE_PERIOD' | 'SUBSCRIPTION_INACTIVE' | 'SUBSCRIPTION_CANCELED';
+  inGracePeriod?: boolean;
 }
 
 /**
  * Validate that a user has an active subscription
  * Checks for:
  * - Subscription exists
- * - Trial is not expired
- * - Subscription is in active status ('trialing' or 'active')
+ * - Trial is not expired (with grace period support)
+ * - Subscription is in active status ('trialing', 'active', or 'grace_period')
+ *
+ * Grace Period Logic:
+ * - After trial ends, users get 3 days of read-only access
+ * - During grace period, they can view data but not add competitors
+ * - After grace period, subscription fully expires
  */
 export async function requireActiveSubscription(
-  userId: number
+  userId: number,
+  allowGracePeriod: boolean = false
 ): Promise<SubscriptionValidationResult> {
   try {
     // Get user's most recent subscription
@@ -32,11 +39,37 @@ export async function requireActiveSubscription(
       };
     }
 
-    // Check if trial has expired
-    if (subscription.status === 'trialing') {
-      const now = new Date();
-      const trialEnd = new Date(subscription.currentPeriodEnd);
+    const now = new Date();
+    const trialEnd = new Date(subscription.currentPeriodEnd);
+    const gracePeriodEnd = new Date(trialEnd);
+    gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 3); // 3 days grace period
 
+    // Check if in grace period (trial ended but within 3 days)
+    const isInGracePeriod = subscription.status === 'grace_period' && now <= gracePeriodEnd;
+
+    if (isInGracePeriod) {
+      if (allowGracePeriod) {
+        // Allow read-only access during grace period
+        return {
+          valid: true,
+          subscription,
+          inGracePeriod: true,
+        };
+      } else {
+        // Grace period exists but not allowed for this action
+        const daysRemaining = Math.ceil((gracePeriodEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        return {
+          valid: false,
+          subscription,
+          error: `Your trial has ended. You have ${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'} of grace period remaining. Upgrade now to continue adding competitors.`,
+          errorCode: 'GRACE_PERIOD',
+          inGracePeriod: true,
+        };
+      }
+    }
+
+    // Check if trial has expired (no grace period or grace period ended)
+    if (subscription.status === 'trialing') {
       if (now > trialEnd) {
         return {
           valid: false,

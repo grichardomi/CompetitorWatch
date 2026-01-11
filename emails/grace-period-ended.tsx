@@ -11,94 +11,91 @@ import {
   Text,
 } from '@react-email/components';
 
-interface TrialEndedProps {
+interface GracePeriodEndedProps {
   userName?: string;
   dashboardUrl?: string;
-  gracePeriodDays?: number;
 }
 
-export default function TrialEnded({
+export default function GracePeriodEnded({
   userName = 'there',
   dashboardUrl = 'http://localhost:3000/dashboard',
-  gracePeriodDays = 3,
-}: TrialEndedProps) {
+}: GracePeriodEndedProps) {
   return (
     <Html>
       <Head />
-      <Preview>Your CompetitorWatch trial has ended</Preview>
+      <Preview>Your CompetitorWatch grace period has ended</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={header}>
-            <Heading style={h1}>Your trial has ended</Heading>
+            <Heading style={h1}>Your grace period has ended</Heading>
           </Section>
 
           <Section style={content}>
             <Text style={paragraph}>Hi {userName},</Text>
 
             <Text style={paragraph}>
-              Your 14-day free trial of CompetitorWatch has come to an end. We hope you enjoyed
-              exploring our competitive intelligence platform!
+              Your 3-day grace period has ended. Your CompetitorWatch account is now paused,
+              and you no longer have access to your competitor monitoring data.
             </Text>
 
-            <Section style={gracePeriodBox}>
-              <Text style={gracePeriodTitle}>
-                🎁 You have {gracePeriodDays} days of grace period
+            <Section style={urgentBox}>
+              <Text style={urgentTitle}>
+                ⏰ Your data is waiting for you
               </Text>
-              <Text style={gracePeriodText}>
-                During this time, you can still view all your competitor data and insights. However,
-                you won't be able to add new competitors or trigger new crawls until you upgrade.
-              </Text>
-            </Section>
-
-            <Section style={thankYouBox}>
-              <Text style={thankYouText}>
-                Thank you for trying CompetitorWatch. We'd love to continue helping you stay ahead
-                of your competition.
+              <Text style={urgentText}>
+                All your competitor data, insights, and historical tracking are safely stored.
+                Upgrade now to regain immediate access and resume monitoring.
               </Text>
             </Section>
-
-            <Text style={paragraph}>
-              <strong>To continue monitoring your competitors:</strong>
-            </Text>
-
-            <Text style={paragraph}>
-              Choose a plan that fits your needs and never miss another competitive update. All your
-              data is saved and will be available immediately after you upgrade.
-            </Text>
 
             <Button style={button} href={`${dashboardUrl}/billing`}>
-              Choose Your Plan
+              Reactivate Your Account
             </Button>
 
             <Section style={benefitsBox}>
-              <Heading style={h2}>Why upgrade?</Heading>
+              <Heading style={h2}>What you're missing:</Heading>
               <Text style={benefitText}>
-                ✓ <strong>Stay informed</strong> - Get instant alerts on competitor changes
+                ✗ Real-time competitor monitoring
               </Text>
               <Text style={benefitText}>
-                ✓ <strong>Save time</strong> - Automated monitoring instead of manual checking
+                ✗ Instant change alerts
               </Text>
               <Text style={benefitText}>
-                ✓ <strong>Make better decisions</strong> - Data-driven competitive insights
+                ✗ Price tracking and insights
               </Text>
               <Text style={benefitText}>
-                ✓ <strong>Grow faster</strong> - React quickly to market opportunities
+                ✗ Competitive intelligence reports
               </Text>
             </Section>
 
             <Text style={paragraph}>
-              Have questions? Just reply to this email and we'll help you choose the right plan.
+              <strong>Reactivate in under 2 minutes:</strong>
+            </Text>
+
+            <Text style={paragraph}>
+              Choose a plan, enter your payment details, and you'll have immediate access
+              to all your data and monitoring. No setup required - everything is exactly
+              where you left it.
+            </Text>
+
+            <Button style={secondaryButton} href={`${dashboardUrl}/billing`}>
+              View Plans & Pricing
+            </Button>
+
+            <Text style={paragraph}>
+              Have questions about which plan is right for you? Just reply to this email
+              and we'll help you choose.
             </Text>
 
             <Text style={paragraphSmall}>
-              Not ready to upgrade? Your account will remain active, but monitoring will be paused.
-              You can upgrade anytime to resume.
+              Your account and data will be permanently deleted after 30 days of inactivity.
+              Upgrade anytime before then to keep your data.
             </Text>
           </Section>
 
           <Section style={footer}>
             <Text style={footerText}>
-              Thank you for trying CompetitorWatch
+              CompetitorWatch - Competitive Intelligence Made Simple
             </Text>
             <Link href={`${dashboardUrl}/settings`} style={link}>
               Notification Settings
@@ -130,7 +127,7 @@ const header = {
 };
 
 const h1 = {
-  color: '#475569',
+  color: '#dc2626',
   fontSize: '28px',
   fontWeight: 'bold',
   margin: '0',
@@ -161,41 +158,26 @@ const paragraphSmall = {
   marginTop: '24px',
 };
 
-const gracePeriodBox = {
-  backgroundColor: '#fef3c7',
+const urgentBox = {
+  backgroundColor: '#fee2e2',
   borderRadius: '8px',
   padding: '24px',
   margin: '24px 0',
-  borderLeft: '4px solid #f59e0b',
+  borderLeft: '4px solid #dc2626',
 };
 
-const gracePeriodTitle = {
-  color: '#92400e',
+const urgentTitle = {
+  color: '#991b1b',
   fontSize: '18px',
   fontWeight: 'bold' as const,
   lineHeight: '24px',
   margin: '0 0 12px',
 };
 
-const gracePeriodText = {
-  color: '#78350f',
+const urgentText = {
+  color: '#7f1d1d',
   fontSize: '15px',
   lineHeight: '22px',
-  margin: '0',
-};
-
-const thankYouBox = {
-  backgroundColor: '#f0f9ff',
-  borderRadius: '8px',
-  padding: '24px',
-  margin: '24px 0',
-  borderLeft: '4px solid #2563eb',
-};
-
-const thankYouText = {
-  color: '#1e40af',
-  fontSize: '16px',
-  lineHeight: '24px',
   margin: '0',
 };
 
@@ -207,13 +189,28 @@ const benefitsBox = {
 };
 
 const benefitText = {
-  color: '#334155',
+  color: '#64748b',
   fontSize: '15px',
   lineHeight: '24px',
   marginBottom: '12px',
+  textDecoration: 'line-through',
 };
 
 const button = {
+  backgroundColor: '#dc2626',
+  borderRadius: '8px',
+  color: '#fff',
+  fontSize: '16px',
+  fontWeight: 'bold',
+  textDecoration: 'none',
+  textAlign: 'center' as const,
+  display: 'block',
+  width: '100%',
+  padding: '14px 20px',
+  margin: '24px 0',
+};
+
+const secondaryButton = {
   backgroundColor: '#2563eb',
   borderRadius: '8px',
   color: '#fff',
