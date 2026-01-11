@@ -11,7 +11,7 @@ const RETRY_SCHEDULE = [5, 15, 45]; // 5min, then 15min, then 45min
 /**
  * Send a queued email
  */
-export async function sendQueuedEmail(emailQueueId: string): Promise<{
+export async function sendQueuedEmail(emailQueueId: number): Promise<{
   success: boolean;
   message?: string;
   error?: string;
@@ -79,19 +79,29 @@ export async function sendQueuedEmail(emailQueueId: string): Promise<{
     }
 
     // Generate subject line
-    const alertType = queueEntry.templateData?.alertType || 'update';
-    const competitorName = queueEntry.templateData?.competitorName || 'Competitor';
+    const templateData = queueEntry.templateData as any;
+    const alertType = templateData?.alertType || 'update';
+    const competitorName = templateData?.competitorName || 'Competitor';
     const subject = generateSubject(alertType, competitorName);
 
     // Send via Resend
-    const emailResult = await sendEmail({
-      from: 'alerts@competitorwatch.com',
-      to: queueEntry.toEmail,
-      subject,
-      html: renderResult.html,
-    });
+    let emailResult: { success: boolean; error?: string } | null = null;
+    try {
+      await sendEmail({
+        from: 'alerts@competitorwatch.com',
+        to: queueEntry.toEmail,
+        subject,
+        html: renderResult.html,
+      });
+      emailResult = { success: true };
+    } catch (error) {
+      emailResult = {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
 
-    if (!emailResult.success) {
+    if (!emailResult || !emailResult.success) {
       // Email send failed - check if we should retry
       const shouldRetry = queueEntry.attempts < RETRY_SCHEDULE.length;
 

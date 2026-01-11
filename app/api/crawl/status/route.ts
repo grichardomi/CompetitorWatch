@@ -11,7 +11,7 @@ import { getQueueStats, getCompetitorsDue } from '@/services/scheduler';
 export async function GET(_req: NextRequest) {
   try {
     // Verify authentication (optional - allow public access for now, but could require auth)
-    const _session = await getServerSession(authOptions);
+    await getServerSession(authOptions);
 
     // Get queue statistics
     const queueStats = await getQueueStats();

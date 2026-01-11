@@ -25,7 +25,7 @@ interface PreferencesData {
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const { data: session, status } = useSession();
+  const { status } = useSession();
 
   const [step, setStep] = useState<OnboardingStep>(1);
   const [loading, setLoading] = useState(false);

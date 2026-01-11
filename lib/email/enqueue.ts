@@ -3,7 +3,7 @@ import { calculateScheduledTime } from './quiet-hours';
 import { getDashboardUrl } from '@/lib/config/env';
 
 interface EnqueueEmailParams {
-  userId: string;
+  userId: number;
   toEmail: string;
   templateName: string;
   templateData: any;
@@ -35,7 +35,8 @@ export async function enqueueEmail({
     }
 
     // Check if this alert type is enabled
-    if (!preferences.alertTypes.includes(alertType)) {
+    const alertTypes = preferences.alertTypes as string[] | null;
+    if (!alertTypes || !alertTypes.includes(alertType)) {
       return {
         success: false,
         reason: `Alert type "${alertType}" not enabled`,
@@ -54,7 +55,7 @@ export async function enqueueEmail({
     // Insert into EmailQueue
     const queueEntry = await db.emailQueue.create({
       data: {
-        userId: parseInt(userId),
+        userId,
         toEmail,
         templateName,
         templateData,
@@ -65,7 +66,7 @@ export async function enqueueEmail({
 
     return {
       success: true,
-      queueId: queueEntry.id,
+      queueId: String(queueEntry.id),
     };
   } catch (error) {
     console.error('Failed to enqueue email:', error);
@@ -79,7 +80,7 @@ export async function enqueueEmail({
 /**
  * Convenience function to enqueue email for an alert
  */
-export async function enqueueAlertEmail(alertId: string): Promise<{ success: boolean; reason?: string }> {
+export async function enqueueAlertEmail(alertId: number): Promise<{ success: boolean; reason?: string }> {
   try {
     // Fetch alert with related data
     const alert = await db.alert.findUnique({
@@ -114,8 +115,8 @@ export async function enqueueAlertEmail(alertId: string): Promise<{ success: boo
 
     // Enqueue email
     return await enqueueEmail({
-      userId: alert.business.userId,
-      toEmail: alert.business.user.email,
+      userId: alert.business!.userId,
+      toEmail: alert.business!.user.email,
       templateName: 'alert_notification',
       templateData,
       alertType: alert.alertType,

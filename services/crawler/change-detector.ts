@@ -1,5 +1,4 @@
 import { db } from '@/lib/db/prisma';
-import { hashContent } from '@/lib/utils/hash';
 import { ExtractedData } from './ai-extractor';
 import { enqueueAlertEmail } from '@/lib/email/enqueue';
 
@@ -46,7 +45,7 @@ export async function detectChanges(
   }
 
   // Hash changed - analyze what changed
-  const previousData = previousSnapshot.extractedData as ExtractedData;
+  const previousData = previousSnapshot.extractedData as unknown as ExtractedData;
   const changes = analyzeChanges(previousData, newData);
 
   if (changes.changeTypes.length > 0) {
@@ -311,7 +310,7 @@ function extractPrice(priceStr: string): number {
 /**
  * Generate human-readable price change message
  */
-function generatePriceMessage(changes: any, hasPriceReductions: boolean): string {
+function generatePriceMessage(changes: any, _hasPriceReductions: boolean): string {
   let msg = '';
 
   if (changes.added.length > 0) {

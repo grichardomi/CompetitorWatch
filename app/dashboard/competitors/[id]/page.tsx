@@ -7,7 +7,6 @@ import Link from 'next/link';
 import {
   formatRelativeTime,
   calculateNextCrawl,
-  getHostname,
 } from '@/lib/utils/format';
 
 interface Alert {
@@ -199,7 +198,7 @@ export default function CompetitorDetailPage({
             <p className="text-sm text-gray-600 font-medium">Next Check</p>
             <p className="text-2xl font-bold mt-2">
               {calculateNextCrawl(
-                competitor.lastCrawledAt,
+                competitor.lastCrawledAt || null,
                 competitor.crawlFrequencyMinutes
               )}
             </p>

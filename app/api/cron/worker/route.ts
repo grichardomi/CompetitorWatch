@@ -47,13 +47,15 @@ export async function GET(req: NextRequest) {
       };
     }
 
+    const safeResult = result as { processed: number; successful: number; failed: number; results: any[] };
+
     return NextResponse.json(
       {
         status: 'success',
-        processed: result.processed,
-        successful: result.successful,
-        failed: result.failed,
-        results: result.results,
+        processed: safeResult.processed,
+        successful: safeResult.successful,
+        failed: safeResult.failed,
+        results: safeResult.results,
         timestamp: new Date().toISOString(),
       },
       { status: 200 }

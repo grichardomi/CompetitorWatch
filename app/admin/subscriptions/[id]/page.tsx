@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 
 interface User {
@@ -40,7 +40,6 @@ interface Payment {
 
 export default function SubscriptionDetailsPage() {
   const params = useParams();
-  const router = useRouter();
   const subscriptionId = params.id as string;
 
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -360,7 +359,7 @@ export default function SubscriptionDetailsPage() {
                       {getStatusBadge(payment.status)}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
-                      {payment.description || 'N/A'}
+                      {payment.amount ? `$${(payment.amount / 100).toFixed(2)}` : 'N/A'}
                     </td>
                     <td className="px-6 py-4">
                       <a

@@ -31,7 +31,7 @@ export async function GET(request: Request) {
       if (currentUser.role !== 'admin') {
         return Response.json({ error: 'Admin access required' }, { status: 403 });
       }
-      targetUserId = requestedUserId;
+      targetUserId = parseInt(requestedUserId);
     }
 
     // Get payment history

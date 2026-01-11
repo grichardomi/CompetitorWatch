@@ -60,7 +60,7 @@ async function getFromCache(contentHash: string): Promise<ExtractedData | null> 
 
     if (cached) {
       console.log(`Cache hit for hash: ${contentHash}`);
-      return cached.extractedData as ExtractedData;
+      return cached.extractedData as unknown as ExtractedData;
     }
   } catch (error) {
     console.error('Cache lookup failed:', error);

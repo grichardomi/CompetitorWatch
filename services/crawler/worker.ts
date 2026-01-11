@@ -5,7 +5,6 @@ import { detectChanges } from './change-detector';
 import { checkRateLimit } from './rate-limiter';
 import { hashContent } from '@/lib/utils/hash';
 
-const MAX_RETRIES = parseInt(process.env.CRAWLER_MAX_RETRIES || '3', 10);
 const CRAWL_TIMEOUT_MS = parseInt(process.env.CRAWLER_TIMEOUT_MS || '30000', 10);
 
 export interface CrawlJob {
@@ -156,7 +155,7 @@ export async function processJob(job: CrawlJob): Promise<ProcessResult> {
     let alertsCreated = 0;
     try {
       // Create snapshot
-      const snapshot = await db.priceSnapshot.create({
+      await db.priceSnapshot.create({
         data: {
           competitorId: competitor.id,
           extractedData: extractedData as any,
@@ -241,7 +240,7 @@ export async function processQueueBatch(maxJobs: number = 10): Promise<{
 
   for (let i = 0; i < maxJobs; i++) {
     // Check timeout - exit before Railway's 10min limit
-    const elapsed = Date.now() - process.env.JOB_START_TIME ? parseInt(process.env.JOB_START_TIME!) : 0;
+    const elapsed = Date.now() - (process.env.JOB_START_TIME ? parseInt(process.env.JOB_START_TIME) : 0);
     if (elapsed > 9 * 60 * 1000) {
       console.log('Approaching timeout, exiting batch');
       break;
