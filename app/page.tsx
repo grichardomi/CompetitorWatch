@@ -24,6 +24,9 @@ export default function Home() {
             <div className="px-4 py-2 text-gray-400">Loading...</div>
           ) : (
             <>
+              <Link href="/pricing" className="px-4 py-2 text-gray-600 hover:text-gray-900">
+                Pricing
+              </Link>
               <Link href="/auth/signin" className="px-4 py-2 text-gray-600 hover:text-gray-900">
                 Sign In
               </Link>

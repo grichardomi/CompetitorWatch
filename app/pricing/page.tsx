@@ -95,12 +95,31 @@ export default function Pricing() {
           <Link href="/" className="text-2xl font-bold text-blue-600">
             CompetitorWatch
           </Link>
-          <Link
-            href="/auth/signin"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Sign In
-          </Link>
+          <div className="flex items-center gap-4">
+            {status === 'authenticated' ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="px-4 py-2 text-gray-600 hover:text-gray-900"
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  href="/dashboard/billing"
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  My Account
+                </Link>
+              </>
+            ) : (
+              <Link
+                href="/auth/signin"
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Sign In
+              </Link>
+            )}
+          </div>
         </div>
       </header>
 
@@ -113,6 +132,13 @@ export default function Pricing() {
             Choose the plan that fits your business needs
           </p>
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div className="max-w-2xl mx-auto mb-8 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            {error}
+          </div>
+        )}
 
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -144,13 +170,22 @@ export default function Pricing() {
 
               {/* CTA Button */}
               <button
-                className={`w-full px-4 py-2 rounded-lg font-semibold transition-colors mb-8 ${
+                onClick={() => handleGetStarted(plan.id)}
+                disabled={loading !== null}
+                className={`w-full px-4 py-2 rounded-lg font-semibold transition-colors mb-8 disabled:opacity-50 disabled:cursor-not-allowed ${
                   plan.highlighted
                     ? 'bg-blue-600 text-white hover:bg-blue-700'
                     : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                 }`}
               >
-                Get Started
+                {loading === plan.id ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    Loading...
+                  </span>
+                ) : (
+                  'Get Started'
+                )}
               </button>
 
               {/* Features List */}
