@@ -20,7 +20,7 @@ interface WelcomeEmailProps {
 export default function WelcomeEmail({
   userName = 'there',
   trialEndDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-  dashboardUrl = 'http://localhost:3000/dashboard',
+  dashboardUrl = 'https://app.competitorwatch.com/dashboard',
 }: WelcomeEmailProps) {
   const formattedDate = new Date(trialEndDate).toLocaleDateString('en-US', {
     month: 'long',

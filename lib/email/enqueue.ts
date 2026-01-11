@@ -1,5 +1,6 @@
 import { db } from '@/lib/db/prisma';
 import { calculateScheduledTime } from './quiet-hours';
+import { getDashboardUrl } from '@/lib/config/env';
 
 interface EnqueueEmailParams {
   userId: string;
@@ -107,8 +108,8 @@ export async function enqueueAlertEmail(alertId: string): Promise<{ success: boo
       alertType: alert.alertType,
       message: alert.message,
       details: alert.details,
-      dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/alerts`,
-      unsubscribeUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings`,
+      dashboardUrl: getDashboardUrl('/dashboard/alerts'),
+      unsubscribeUrl: getDashboardUrl('/dashboard/settings'),
     };
 
     // Enqueue email

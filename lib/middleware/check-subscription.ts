@@ -1,4 +1,5 @@
 import { db } from '@/lib/db/prisma';
+import { TRIAL_CONFIG } from '@/lib/config/env';
 
 export interface SubscriptionValidationResult {
   valid: boolean;
@@ -42,9 +43,9 @@ export async function requireActiveSubscription(
     const now = new Date();
     const trialEnd = new Date(subscription.currentPeriodEnd);
     const gracePeriodEnd = new Date(trialEnd);
-    gracePeriodEnd.setDate(gracePeriodEnd.getDate() + 3); // 3 days grace period
+    gracePeriodEnd.setDate(gracePeriodEnd.getDate() + TRIAL_CONFIG.gracePeriodDays);
 
-    // Check if in grace period (trial ended but within 3 days)
+    // Check if in grace period (trial ended but within grace period days)
     const isInGracePeriod = subscription.status === 'grace_period' && now <= gracePeriodEnd;
 
     if (isInGracePeriod) {

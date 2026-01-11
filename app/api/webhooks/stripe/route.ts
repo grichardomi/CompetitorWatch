@@ -28,6 +28,7 @@ import { headers } from 'next/headers';
 import { stripe, getCompetitorLimitFromPriceId } from '@/lib/stripe/config';
 import { db } from '@/lib/db/prisma';
 import { sendEmail } from '@/lib/email/client';
+import { getDashboardUrl } from '@/lib/config/env';
 import Stripe from 'stripe';
 
 export async function POST(req: Request) {
@@ -339,7 +340,7 @@ async function handlePaymentSuccess(invoice: Stripe.Invoice) {
               <p>Your payment has been processed successfully and your subscription is now active.</p>
               <p>Thank you for continuing to use CompetitorWatch!</p>
               <p style="margin: 30px 0;">
-                <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
+                <a href="${getDashboardUrl('/dashboard')}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
                   Go to Dashboard
                 </a>
               </p>
@@ -384,7 +385,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
   // Send payment failure notification email
   try {
     const amountDue = (invoice.amount_due / 100).toFixed(2);
-    const invoiceUrl = invoice.hosted_invoice_url || `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing`;
+    const invoiceUrl = invoice.hosted_invoice_url || getDashboardUrl('/dashboard/billing');
 
     await sendEmail({
       to: user.email,
@@ -484,7 +485,7 @@ async function handleTrialWillEnd(subscription: Stripe.Subscription) {
             </div>
 
             <div style="text-align: center; margin: 40px 0;">
-              <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing"
+              <a href="${getDashboardUrl('/dashboard/billing')}"
                  style="background-color: #2563eb; color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 18px; box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);">
                 Upgrade Now & Save Your Data
               </a>
@@ -511,7 +512,7 @@ async function handleTrialWillEnd(subscription: Stripe.Subscription) {
               CompetitorWatch - Stay ahead of your competition
             </p>
             <p style="color: #9ca3af; font-size: 12px; margin: 10px 0 0 0;">
-              <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings" style="color: #2563eb; text-decoration: none;">Notification Settings</a>
+              <a href="${getDashboardUrl('/dashboard/settings')}" style="color: #2563eb; text-decoration: none;">Notification Settings</a>
             </p>
           </div>
         </div>

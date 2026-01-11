@@ -19,8 +19,8 @@ interface TrialDay11ReminderProps {
 
 export default function TrialDay11Reminder({
   userName = 'there',
-  dashboardUrl = 'http://localhost:3000/dashboard',
-  pricingUrl = 'http://localhost:3000/pricing',
+  dashboardUrl = 'https://app.competitorwatch.com/dashboard',
+  pricingUrl = 'https://app.competitorwatch.com/pricing',
 }: TrialDay11ReminderProps) {
   return (
     <Html>

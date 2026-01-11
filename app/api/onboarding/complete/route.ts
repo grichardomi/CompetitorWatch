@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth';
 import { db } from '@/lib/db/prisma';
 import { renderEmailTemplate, generateSubject } from '@/lib/email/render';
 import { sendEmail } from '@/lib/email/client';
+import { getDashboardUrl, TRIAL_CONFIG } from '@/lib/config/env';
 
 export async function POST(req: Request) {
   try {
@@ -51,9 +52,9 @@ export async function POST(req: Request) {
       },
     });
 
-    // Create trial subscription (14 days)
+    // Create trial subscription
     const trialEnd = new Date();
-    trialEnd.setDate(trialEnd.getDate() + 14);
+    trialEnd.setDate(trialEnd.getDate() + TRIAL_CONFIG.durationDays);
 
     // Check if subscription already exists
     const existingSubscription = await db.subscription.findFirst({
@@ -69,7 +70,7 @@ export async function POST(req: Request) {
           status: 'trialing',
           currentPeriodStart: new Date(),
           currentPeriodEnd: trialEnd,
-          competitorLimit: 5, // Free trial limit (Starter plan)
+          competitorLimit: TRIAL_CONFIG.competitorLimit,
         },
       });
     }
@@ -81,7 +82,7 @@ export async function POST(req: Request) {
         templateData: {
           userName: user.name || 'there',
           trialEndDate: trialEnd.toISOString(),
-          dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
+          dashboardUrl: getDashboardUrl('/dashboard'),
         },
       });
 
@@ -99,15 +100,16 @@ export async function POST(req: Request) {
       console.error('Failed to send welcome email:', emailError);
     }
 
-    // Schedule trial reminder emails for Day 7, 11, and 14
+    // Schedule trial reminder emails
+    const trialDuration = TRIAL_CONFIG.durationDays;
     const day7 = new Date();
-    day7.setDate(day7.getDate() + 7);
+    day7.setDate(day7.getDate() + Math.floor(trialDuration / 2)); // Halfway through trial
 
     const day11 = new Date();
-    day11.setDate(day11.getDate() + 11);
+    day11.setDate(day11.getDate() + (trialDuration - 3)); // 3 days before end
 
-    const day14 = new Date();
-    day14.setDate(day14.getDate() + 14);
+    const dayEnd = new Date();
+    dayEnd.setDate(dayEnd.getDate() + trialDuration); // Trial end day
 
     await db.emailQueue.createMany({
       data: [
@@ -117,7 +119,7 @@ export async function POST(req: Request) {
           templateName: 'trial_day7_reminder',
           templateData: {
             userName: user.name || 'there',
-            dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
+            dashboardUrl: getDashboardUrl('/dashboard'),
             competitorsCount: business.competitors.length,
           },
           scheduledFor: day7,
@@ -129,8 +131,8 @@ export async function POST(req: Request) {
           templateName: 'trial_day11_reminder',
           templateData: {
             userName: user.name || 'there',
-            dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
-            pricingUrl: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`,
+            dashboardUrl: getDashboardUrl('/dashboard'),
+            pricingUrl: getDashboardUrl('/pricing'),
           },
           scheduledFor: day11,
           status: 'pending',
@@ -141,9 +143,9 @@ export async function POST(req: Request) {
           templateName: 'trial_ended',
           templateData: {
             userName: user.name || 'there',
-            dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
+            dashboardUrl: getDashboardUrl('/dashboard'),
           },
-          scheduledFor: day14,
+          scheduledFor: dayEnd,
           status: 'pending',
         },
       ],

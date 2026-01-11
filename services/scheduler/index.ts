@@ -1,4 +1,5 @@
 import { db } from '@/lib/db/prisma';
+import { TRIAL_CONFIG } from '@/lib/config/env';
 
 export interface SchedulerResult {
   enqueued: number;
@@ -14,6 +15,8 @@ export async function enqueueJobs(): Promise<SchedulerResult> {
   console.log('Starting scheduler...');
 
   try {
+    const gracePeriodDays = TRIAL_CONFIG.gracePeriodDays;
+
     // Find active competitors that are due for crawling
     // Only include competitors from users with active subscriptions
     const dueCompetitors = await db.$queryRaw<any[]>`
@@ -35,7 +38,7 @@ export async function enqueueJobs(): Promise<SchedulerResult> {
         AND (
           s.status = 'active'
           OR (s.status = 'trialing' AND s."currentPeriodEnd" > NOW())
-          OR (s.status = 'grace_period' AND s."currentPeriodEnd" + INTERVAL '3 days' > NOW())
+          OR (s.status = 'grace_period' AND s."currentPeriodEnd" + (${gracePeriodDays} * INTERVAL '1 day') > NOW())
         )
         AND s.status != 'paused'
       ORDER BY c."lastCrawledAt" ASC NULLS FIRST
@@ -154,6 +157,8 @@ export async function getQueueStats(): Promise<{
  */
 export async function getCompetitorsDue(limit: number = 10): Promise<any[]> {
   try {
+    const gracePeriodDays = TRIAL_CONFIG.gracePeriodDays;
+
     const due = await db.$queryRaw<any[]>`
       SELECT c.id, c.name, c.url, c."lastCrawledAt", c."crawlFrequencyMinutes"
       FROM "Competitor" c
@@ -169,7 +174,7 @@ export async function getCompetitorsDue(limit: number = 10): Promise<any[]> {
         AND (
           s.status = 'active'
           OR (s.status = 'trialing' AND s."currentPeriodEnd" > NOW())
-          OR (s.status = 'grace_period' AND s."currentPeriodEnd" + INTERVAL '3 days' > NOW())
+          OR (s.status = 'grace_period' AND s."currentPeriodEnd" + (${gracePeriodDays} * INTERVAL '1 day') > NOW())
         )
         AND s.status != 'paused'
       ORDER BY c."lastCrawledAt" ASC NULLS FIRST

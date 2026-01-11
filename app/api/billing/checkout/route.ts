@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth-options';
 import { db } from '@/lib/db/prisma';
 import { stripe, getPriceId, PRICING_PLANS } from '@/lib/stripe/config';
+import { getDashboardUrl } from '@/lib/config/env';
 
 export async function POST(req: Request) {
   try {
@@ -90,8 +91,8 @@ export async function POST(req: Request) {
           quantity: 1,
         },
       ],
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing?success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing?canceled=true`,
+      success_url: `${getDashboardUrl('/dashboard/billing')}?success=true&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${getDashboardUrl('/dashboard/billing')}?canceled=true`,
       allow_promotion_codes: true,
       metadata: {
         userId: user.id.toString(),

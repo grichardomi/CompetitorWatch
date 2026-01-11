@@ -19,7 +19,7 @@ interface TrialDay7ReminderProps {
 
 export default function TrialDay7Reminder({
   userName = 'there',
-  dashboardUrl = 'http://localhost:3000/dashboard',
+  dashboardUrl = 'https://app.competitorwatch.com/dashboard',
   competitorsCount = 0,
 }: TrialDay7ReminderProps) {
   return (

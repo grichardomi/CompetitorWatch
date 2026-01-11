@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth-options';
 import { enqueueEmail } from '@/lib/email/enqueue';
 import { db } from '@/lib/db/prisma';
+import { getDashboardUrl } from '@/lib/config/env';
 
 /**
  * Send a test email to the authenticated user
@@ -62,8 +63,8 @@ export async function POST(request: NextRequest) {
         alertType: testAlertType,
         message: testMessage,
         details: testDetails,
-        dashboardUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/alerts`,
-        unsubscribeUrl: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings`,
+        dashboardUrl: getDashboardUrl('/dashboard/alerts'),
+        unsubscribeUrl: getDashboardUrl('/dashboard/settings'),
       },
       alertType: testAlertType,
     });
