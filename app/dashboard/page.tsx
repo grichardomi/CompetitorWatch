@@ -4,7 +4,6 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Header from '@/components/Header';
 
 interface DashboardStats {
   competitorsCount: number;
@@ -98,7 +97,7 @@ export default function Dashboard() {
 
   if (status === 'loading' || checkingStatus) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="flex items-center justify-center py-20">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading...</p>
@@ -112,11 +111,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header subscription={subscription} />
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 sm:px-6 py-8 pb-20 md:pb-8">
+    <main className="container mx-auto px-4 sm:px-6 py-8 pb-20 md:pb-8">
         {/* Trial Expiration Banner */}
         {subscription?.status === 'trialing' && subscription?.daysRemaining !== null && subscription.daysRemaining <= 7 && (
           <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -270,6 +265,5 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
-    </div>
   );
 }
