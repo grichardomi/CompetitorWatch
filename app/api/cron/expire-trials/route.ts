@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
         },
       },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             email: true,
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
         });
 
         movedToGrace++;
-        console.log(`Moved trial to grace period for user ${trial.userId} (${trial.user.email})`);
+        console.log(`Moved trial to grace period for user ${trial.userId} (${trial.User.email})`);
 
         // Send trial_ended email with grace period information
         const trialEndedEmailSent = await db.emailQueue.findFirst({
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
           const emailResult = await renderEmailTemplate({
             templateName: 'trial_ended',
             templateData: {
-              userName: trial.user.name || 'there',
+              userName: trial.User.name || 'there',
               dashboardUrl: getDashboardUrl('/dashboard'),
               gracePeriodDays,
             },
@@ -96,13 +96,13 @@ export async function GET(request: NextRequest) {
 
           if (emailResult.success && emailResult.html) {
             await sendEmail({
-              to: trial.user.email!,
+              to: trial.User.email!,
               subject: generateSubject('trial_ended'),
               html: emailResult.html,
             });
 
             gracePeriodEmailsSent++;
-            console.log(`Sent trial_ended email to ${trial.user.email}`);
+            console.log(`Sent trial_ended email to ${trial.User.email}`);
           }
         }
       } catch (error) {
@@ -124,7 +124,7 @@ export async function GET(request: NextRequest) {
         },
       },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             email: true,
@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
         });
 
         expired++;
-        console.log(`Expired grace period for user ${gracePeriod.userId} (${gracePeriod.user.email})`);
+        console.log(`Expired grace period for user ${gracePeriod.userId} (${gracePeriod.User.email})`);
 
         // Send grace_period_ended email
         const gracePeriodEndedEmailSent = await db.emailQueue.findFirst({
@@ -168,20 +168,20 @@ export async function GET(request: NextRequest) {
           const emailResult = await renderEmailTemplate({
             templateName: 'grace_period_ended',
             templateData: {
-              userName: gracePeriod.user.name || 'there',
+              userName: gracePeriod.User.name || 'there',
               dashboardUrl: getDashboardUrl('/dashboard'),
             },
           });
 
           if (emailResult.success && emailResult.html) {
             await sendEmail({
-              to: gracePeriod.user.email!,
+              to: gracePeriod.User.email!,
               subject: generateSubject('grace_period_ended'),
               html: emailResult.html,
             });
 
             expiredEmailsSent++;
-            console.log(`Sent grace_period_ended email to ${gracePeriod.user.email}`);
+            console.log(`Sent grace_period_ended email to ${gracePeriod.User.email}`);
           }
         }
       } catch (error) {

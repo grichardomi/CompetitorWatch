@@ -14,7 +14,7 @@ export async function GET() {
     const user = await db.user.findUnique({
       where: { email: session.user.email },
       include: {
-        subscriptions: {
+        Subscription: {
           orderBy: { createdAt: 'desc' },
           take: 1,
         },
@@ -25,7 +25,7 @@ export async function GET() {
       return Response.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const subscription = user.subscriptions[0];
+    const subscription = user.Subscription[0];
 
     if (!subscription) {
       return Response.json({
@@ -45,7 +45,7 @@ export async function GET() {
     // Get competitor usage
     const competitorCount = await db.competitor.count({
       where: {
-        business: {
+        Business: {
           userId: user.id,
         },
       },

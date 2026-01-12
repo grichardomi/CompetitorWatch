@@ -31,6 +31,7 @@ export async function POST(req: Request) {
         emailFrequency: validatedData.emailFrequency,
         alertTypes: validatedData.alertTypes,
         timezone: validatedData.timezone,
+        updatedAt: new Date(),
       },
       create: {
         userId: user.id,
@@ -38,6 +39,7 @@ export async function POST(req: Request) {
         emailFrequency: validatedData.emailFrequency,
         alertTypes: validatedData.alertTypes,
         timezone: validatedData.timezone,
+        updatedAt: new Date(),
       },
     });
 

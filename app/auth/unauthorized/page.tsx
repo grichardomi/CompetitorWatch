@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 
+export const dynamic = 'force-dynamic';
+
 export default function UnauthorizedPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">

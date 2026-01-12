@@ -255,6 +255,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
       currentPeriodEnd: new Date(subscription.current_period_end * 1000),
       cancelAtPeriodEnd: subscription.cancel_at_period_end,
       competitorLimit,
+      updatedAt: new Date(),
     },
     update: {
       stripePriceId: priceId,

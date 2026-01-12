@@ -14,9 +14,9 @@ export async function GET() {
     const user = await db.user.findUnique({
       where: { email: session.user.email },
       include: {
-        businesses: {
+        Business: {
           include: {
-            competitors: true,
+            Competitor: true,
           },
         },
       },
@@ -28,15 +28,15 @@ export async function GET() {
 
     // Check onboarding status
     const isCompleted = !!user.onboardingCompletedAt;
-    const hasBusiness = user.businesses && user.businesses.length > 0;
-    const competitorCount = user.businesses?.[0]?.competitors?.length || 0;
+    const hasBusiness = user.Business && user.Business.length > 0;
+    const competitorCount = user.Business?.[0]?.Competitor?.length || 0;
 
     return Response.json({
       completed: isCompleted,
       completedAt: user.onboardingCompletedAt,
       hasBusiness,
       competitorCount,
-      businessName: user.businesses?.[0]?.name || null,
+      businessName: user.Business?.[0]?.name || null,
     });
   } catch (error) {
     console.error('Onboarding status check error:', error);

@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     const competitor = await db.competitor.findFirst({
       where: {
         id: parseInt(competitorId),
-        business: {
+        Business: {
           userId: user.id,
         },
       },

@@ -30,15 +30,15 @@ export async function GET(
     const competitor = await db.competitor.findFirst({
       where: {
         id: parseInt(id),
-        business: { userId: user.id },
+        Business: { userId: user.id },
       },
       include: {
-        business: true,
-        alerts: {
+        Business: true,
+        Alert: {
           take: 10,
           orderBy: { createdAt: 'desc' },
         },
-        priceSnapshots: {
+        PriceSnapshot: {
           take: 30,
           orderBy: { detectedAt: 'desc' },
         },
@@ -52,7 +52,15 @@ export async function GET(
       );
     }
 
-    return Response.json(competitor);
+    return Response.json({
+      ...competitor,
+      business: competitor.Business,
+      alerts: competitor.Alert,
+      priceSnapshots: competitor.PriceSnapshot,
+      Business: undefined,
+      Alert: undefined,
+      PriceSnapshot: undefined,
+    });
   } catch (error) {
     console.error('Failed to fetch competitor:', error);
     return Response.json(
@@ -88,7 +96,7 @@ export async function PATCH(
     const competitor = await db.competitor.findFirst({
       where: {
         id: parseInt(id),
-        business: { userId: user.id },
+        Business: { userId: user.id },
       },
     });
 
@@ -179,13 +187,13 @@ export async function DELETE(
     const competitor = await db.competitor.findFirst({
       where: {
         id: parseInt(id),
-        business: { userId: user.id },
+        Business: { userId: user.id },
       },
       include: {
         _count: {
           select: {
-            alerts: true,
-            priceSnapshots: true,
+            Alert: true,
+            PriceSnapshot: true,
           },
         },
       },
@@ -207,8 +215,8 @@ export async function DELETE(
       success: true,
       deleted: {
         competitorId: competitor.id,
-        alertsDeleted: competitor._count.alerts,
-        snapshotsDeleted: competitor._count.priceSnapshots,
+        alertsDeleted: competitor._count.Alert,
+        snapshotsDeleted: competitor._count.PriceSnapshot,
       },
     });
   } catch (error) {

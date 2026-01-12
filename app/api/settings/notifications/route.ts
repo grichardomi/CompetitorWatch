@@ -14,7 +14,7 @@ export async function GET(_req: Request) {
     const user = await db.user.findUnique({
       where: { email: session.user.email },
       include: {
-        notificationPreferences: true,
+        NotificationPreferences: true,
       },
     });
 
@@ -23,17 +23,18 @@ export async function GET(_req: Request) {
     }
 
     // If no preferences exist, create defaults
-    if (!user.notificationPreferences) {
+    if (!user.NotificationPreferences) {
       const preferences = await db.notificationPreferences.create({
         data: {
           userId: user.id,
           alertTypes: ['price_change', 'new_promotion', 'menu_change'],
+          updatedAt: new Date(),
         },
       });
       return Response.json(preferences);
     }
 
-    return Response.json(user.notificationPreferences);
+    return Response.json(user.NotificationPreferences);
   } catch (error) {
     console.error('Failed to fetch notification preferences:', error);
     return Response.json(
@@ -73,12 +74,13 @@ export async function PATCH(req: Request) {
         data: {
           userId: user.id,
           ...body,
+          updatedAt: new Date(),
         },
       });
     } else {
       preferences = await db.notificationPreferences.update({
         where: { userId: user.id },
-        data: body,
+        data: { ...body, updatedAt: new Date() },
       });
     }
 

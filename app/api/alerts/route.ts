@@ -22,14 +22,14 @@ export async function GET(req: NextRequest) {
     // Get user from database
     const user = await db.user.findUnique({
       where: { email: session.user.email },
-      include: { businesses: true },
+      include: { Business: true },
     });
 
-    if (!user || !user.businesses || user.businesses.length === 0) {
+    if (!user || !user.Business || user.Business.length === 0) {
       return Response.json({ alerts: [], total: 0 });
     }
 
-    const business = user.businesses[0];
+    const business = user.Business[0];
 
     // Parse query parameters
     const { searchParams } = new URL(req.url);
@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
     const alerts = await db.alert.findMany({
       where,
       include: {
-        competitor: {
+        Competitor: {
           select: {
             id: true,
             name: true,
@@ -116,14 +116,20 @@ export async function GET(req: NextRequest) {
         name: true,
         _count: {
           select: {
-            alerts: { where: { businessId: business.id } },
+            Alert: { where: { businessId: business.id } },
           },
         },
       },
     });
 
+    const formattedAlerts = alerts.map((alert) => ({
+      ...alert,
+      competitor: alert.Competitor,
+      Competitor: undefined,
+    }));
+
     return Response.json({
-      alerts,
+      alerts: formattedAlerts,
       total,
       pagination: {
         limit,
@@ -138,7 +144,7 @@ export async function GET(req: NextRequest) {
         competitors: competitors.map((c) => ({
           id: c.id,
           name: c.name,
-          count: c._count.alerts,
+          count: c._count.Alert,
         })),
         readStatus: [
           { label: 'Unread', value: 'false' },
@@ -176,14 +182,14 @@ export async function PATCH(req: Request) {
     // Get user
     const user = await db.user.findUnique({
       where: { email: session.user.email },
-      include: { businesses: true },
+      include: { Business: true },
     });
 
-    if (!user || !user.businesses || user.businesses.length === 0) {
+    if (!user || !user.Business || user.Business.length === 0) {
       return Response.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const business = user.businesses[0];
+    const business = user.Business[0];
 
     // Update alerts (only those belonging to this user's business)
     const updated = await db.alert.updateMany({

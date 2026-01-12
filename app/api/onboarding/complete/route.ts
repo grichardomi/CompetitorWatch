@@ -16,9 +16,9 @@ export async function POST(_req: Request) {
     const user = await db.user.findUnique({
       where: { email: session.user.email },
       include: {
-        businesses: {
+        Business: {
           include: {
-            competitors: true,
+            Competitor: true,
           },
         },
       },
@@ -29,15 +29,15 @@ export async function POST(_req: Request) {
     }
 
     // Validate that user has completed all steps
-    if (!user.businesses || user.businesses.length === 0) {
+    if (!user.Business || user.Business.length === 0) {
       return Response.json(
         { error: 'Please complete business setup first' },
         { status: 400 }
       );
     }
 
-    const business = user.businesses[0];
-    if (!business.competitors || business.competitors.length === 0) {
+    const business = user.Business[0];
+    if (!business.Competitor || business.Competitor.length === 0) {
       return Response.json(
         { error: 'Please add at least one competitor' },
         { status: 400 }
@@ -71,6 +71,7 @@ export async function POST(_req: Request) {
           currentPeriodStart: new Date(),
           currentPeriodEnd: trialEnd,
           competitorLimit: TRIAL_CONFIG.competitorLimit,
+          updatedAt: new Date(),
         },
       });
     }
@@ -120,7 +121,7 @@ export async function POST(_req: Request) {
           templateData: {
             userName: user.name || 'there',
             dashboardUrl: getDashboardUrl('/dashboard'),
-            competitorsCount: business.competitors.length,
+            competitorsCount: business.Competitor.length,
           },
           scheduledFor: day7,
           status: 'pending',

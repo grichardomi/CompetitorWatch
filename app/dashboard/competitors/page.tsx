@@ -124,6 +124,26 @@ export default function CompetitorsPage() {
   return (
     <>
       <main className="container mx-auto px-4 sm:px-6 py-8 pb-20 md:pb-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Competitors</h1>
+            <p className="text-gray-600 mt-1">Monitor and track your competitors</p>
+          </div>
+          <div className="flex gap-3">
+            <Link href="/dashboard/competitors/discover">
+              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm">
+                🔍 Discover with AI
+              </button>
+            </Link>
+            <Link href="/dashboard/competitors/new">
+              <button className="px-4 py-2 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium text-sm">
+                + Add Manually
+              </button>
+            </Link>
+          </div>
+        </div>
+
         {/* Error message */}
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -179,11 +199,18 @@ export default function CompetitorsPage() {
             <p className="text-gray-600 mb-6">
               Start monitoring your competitors by adding their websites
             </p>
-            <Link href="/dashboard/competitors/new">
-              <button className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                + Add Your First Competitor
-              </button>
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
+              <Link href="/dashboard/competitors/discover">
+                <button className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                  🔍 Discover with AI
+                </button>
+              </Link>
+              <Link href="/dashboard/competitors/new">
+                <button className="px-6 py-3 bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                  + Add Manually
+                </button>
+              </Link>
+            </div>
           </div>
         ) : (
           <>

@@ -47,7 +47,7 @@ export default function Header({ subscription }: HeaderProps) {
                 alt="MarketPulse"
                 width={500}
                 height={125}
-                className="h-40 md:h-32 lg:h-40 xl:h-48 w-auto"
+                className="h-16 md:h-16 lg:h-20 xl:h-24 w-auto"
                 priority
               />
             </Link>

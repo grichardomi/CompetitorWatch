@@ -68,7 +68,7 @@ export async function GET() {
 
     const convertedUsers = await db.user.count({
       where: {
-        subscriptions: {
+        Subscription: {
           some: {
             AND: [
               { status: 'active' },

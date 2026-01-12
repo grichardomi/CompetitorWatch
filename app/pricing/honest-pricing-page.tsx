@@ -173,7 +173,7 @@ export default function HonestPricing() {
         {/* Roadmap Notice */}
         <div className="max-w-3xl mx-auto mb-12 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <p className="text-sm text-blue-900">
-            <strong>🚀 We're building in public!</strong> Features marked with 🚧 are in development.
+            <strong>🚀 We&apos;re building in public!</strong> Features marked with 🚧 are in development.
             Check our <Link href="/roadmap" className="underline">public roadmap</Link> for ETAs.
           </p>
         </div>

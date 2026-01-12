@@ -194,7 +194,7 @@ export default function DeleteAccountPage() {
                 <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
                   <h3 className="font-medium text-gray-900 mb-1">Contact Support</h3>
                   <p className="text-sm text-gray-600 mb-2">
-                    Having issues? We're here to help
+                    Having issues? We&apos;re here to help
                   </p>
                   <a
                     href="mailto:support@marketpulse.com"

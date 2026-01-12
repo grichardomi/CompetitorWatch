@@ -38,6 +38,7 @@ export async function POST(req: NextRequest) {
         email: validatedData.email,
         name: validatedData.name,
         password: hashedPassword,
+        updatedAt: new Date(),
         // emailVerified is null for email/password users until they verify
       },
       select: {

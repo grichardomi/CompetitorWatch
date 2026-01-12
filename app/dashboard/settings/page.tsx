@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { usePushNotifications } from '@/lib/hooks/usePushNotifications';
 
 interface NotificationPreferences {
   id: number;
@@ -68,6 +69,16 @@ export default function SettingsPage() {
   const [timezone, setTimezone] = useState('America/New_York');
   const [verificationCode, setVerificationCode] = useState('');
   const [showVerification, setShowVerification] = useState(false);
+
+  // Push notifications
+  const {
+    isSupported: pushSupported,
+    isSubscribed: pushEnabled,
+    isLoading: pushLoading,
+    error: pushError,
+    subscribe: enablePush,
+    unsubscribe: disablePush,
+  } = usePushNotifications();
 
   // Redirect if not authenticated
   if (status === 'unauthenticated') {
@@ -150,6 +161,35 @@ export default function SettingsPage() {
       setError(err instanceof Error ? err.message : 'Failed to save preferences');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleTestPushNotification = async () => {
+    try {
+      setError('');
+      setSuccess('');
+
+      const res = await fetch('/api/push/test', {
+        method: 'POST',
+      });
+
+      if (!res.ok) throw new Error('Failed to send test notification');
+
+      const data = await res.json();
+      if (data.sent > 0) {
+        setSuccess(`Test notification sent to ${data.sent} device(s)!`);
+      } else {
+        setError('No subscriptions found. Enable push notifications first.');
+      }
+
+      // Clear message after 3 seconds
+      setTimeout(() => {
+        setSuccess('');
+        setError('');
+      }, 3000);
+    } catch (err) {
+      console.error('Failed to send test notification:', err);
+      setError(err instanceof Error ? err.message : 'Failed to send test notification');
     }
   };
 
@@ -252,7 +292,7 @@ export default function SettingsPage() {
                     Quiet Hours (Optional)
                   </label>
                   <p className="text-sm text-gray-600 mb-3">
-                    Don't send notifications between these hours
+                    Don&apos;t send notifications between these hours
                   </p>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -299,6 +339,101 @@ export default function SettingsPage() {
                       </option>
                     ))}
                   </select>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Push Notifications Section */}
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <div className="flex items-start justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Push Notifications</h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  Receive instant browser notifications on this device
+                </p>
+              </div>
+              {pushSupported ? (
+                <label className="flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={pushEnabled}
+                    disabled={pushLoading}
+                    onChange={async (e) => {
+                      if (e.target.checked) {
+                        await enablePush();
+                      } else {
+                        await disablePush();
+                      }
+                    }}
+                    className="w-5 h-5 text-blue-600 rounded disabled:opacity-50"
+                  />
+                </label>
+              ) : (
+                <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded">Not Supported</span>
+              )}
+            </div>
+
+            {!pushSupported && (
+              <div className="pt-6 border-t border-gray-200">
+                <p className="text-sm text-gray-600">
+                  Push notifications are not supported in your current browser. Try using Chrome, Firefox, Edge, or Safari on desktop or mobile.
+                </p>
+              </div>
+            )}
+
+            {pushSupported && pushEnabled && (
+              <div className="pt-6 border-t border-gray-200">
+                <div className="flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <svg className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  <div>
+                    <p className="text-sm font-medium text-green-900">Push notifications enabled</p>
+                    <p className="text-sm text-green-700 mt-1">
+                      You&apos;ll receive instant notifications on this device when alerts are triggered.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {pushSupported && !pushEnabled && !pushLoading && (
+              <div className="pt-6 border-t border-gray-200">
+                <p className="text-sm text-gray-600 mb-4">
+                  Enable push notifications to receive instant alerts on this device. You&apos;ll be asked to grant permission.
+                </p>
+                <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                  <div className="text-sm">
+                    <p className="font-medium text-blue-900">Benefits:</p>
+                    <ul className="text-blue-800 mt-2 space-y-1">
+                      <li>• Instant notifications even when the site is not open</li>
+                      <li>• Free alternative to SMS notifications</li>
+                      <li>• Works on desktop and mobile browsers</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {pushError && (
+              <div className="pt-6 border-t border-gray-200">
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-800">
+                    <span className="font-medium">Error:</span> {pushError}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {pushLoading && (
+              <div className="pt-6 border-t border-gray-200">
+                <div className="flex items-center gap-3 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                  <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+                  <p className="text-sm text-gray-700">Processing...</p>
                 </div>
               </div>
             )}
@@ -359,7 +494,7 @@ export default function SettingsPage() {
                 {showVerification && !preferences?.smsVerified && (
                   <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                     <p className="text-sm text-blue-900 mb-3">
-                      We'll send a verification code to your phone number. Enter it here to verify:
+                      We&apos;ll send a verification code to your phone number. Enter it here to verify:
                     </p>
                     <input
                       type="text"
@@ -428,6 +563,7 @@ export default function SettingsPage() {
               <li>• Use quiet hours to avoid notifications during sleep or focus time</li>
               <li>• Set your timezone correctly to ensure alerts arrive at the right time</li>
               <li>• Select at least one alert type to receive notifications</li>
+              <li>• Push notifications are free and instant - enable them for best experience</li>
               <li>• SMS notifications require phone verification for security</li>
             </ul>
           </div>

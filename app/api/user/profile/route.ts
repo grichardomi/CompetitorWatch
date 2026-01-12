@@ -15,7 +15,7 @@ export async function GET() {
     const user = await db.user.findUnique({
       where: { email: session.user.email },
       include: {
-        accounts: {
+        Account: {
           select: {
             provider: true,
           },
@@ -32,7 +32,7 @@ export async function GET() {
     if (user.password) {
       authMethods.push('password');
     }
-    user.accounts.forEach((account) => {
+    user.Account.forEach((account) => {
       if (account.provider === 'google') {
         authMethods.push('google');
       }

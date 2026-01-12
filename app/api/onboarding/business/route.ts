@@ -37,6 +37,7 @@ export async function POST(req: Request) {
           name: validatedData.name,
           location: validatedData.location,
           industry: validatedData.industry,
+          updatedAt: new Date(),
         },
       });
 
@@ -53,6 +54,7 @@ export async function POST(req: Request) {
         name: validatedData.name,
         location: validatedData.location,
         industry: validatedData.industry || DEFAULT_INDUSTRY,
+        updatedAt: new Date(),
       },
     });
 

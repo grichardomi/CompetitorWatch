@@ -39,7 +39,7 @@ export async function GET(request: Request) {
       where,
       orderBy: { createdAt: 'desc' },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             email: true,
@@ -54,8 +54,8 @@ export async function GET(request: Request) {
     let filteredSubscriptions = subscriptions;
     if (search) {
       filteredSubscriptions = subscriptions.filter(sub =>
-        sub.user.email.toLowerCase().includes(search.toLowerCase()) ||
-        sub.user.name?.toLowerCase().includes(search.toLowerCase())
+        sub.User.email.toLowerCase().includes(search.toLowerCase()) ||
+        sub.User.name?.toLowerCase().includes(search.toLowerCase())
       );
     }
 
@@ -75,7 +75,7 @@ export async function GET(request: Request) {
       return {
         id: sub.id,
         userId: sub.userId,
-        user: sub.user,
+        user: sub.User,
         stripeSubscriptionId: sub.stripeSubscriptionId,
         stripePriceId: sub.stripePriceId,
         planName,

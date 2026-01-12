@@ -98,6 +98,7 @@ export const authOptions: NextAuthOptions = {
               name: user.name,
               image: user.image,
               emailVerified: new Date(),
+              updatedAt: new Date(),
             },
           });
 
@@ -130,6 +131,7 @@ export const authOptions: NextAuthOptions = {
             data: {
               name: user.name,
               image: user.image,
+              updatedAt: new Date(),
             },
           });
 

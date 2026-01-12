@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Link from 'next/link';
 import { formatRelativeTime } from '@/lib/utils/format';
 
@@ -49,7 +49,7 @@ const ALERT_TYPE_COLORS: Record<string, { bg: string; text: string; icon: string
   menu_change: { bg: 'bg-purple-100', text: 'text-purple-700', icon: '📋' },
 };
 
-export default function AlertsPage() {
+function AlertsContent() {
   const { status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -476,5 +476,20 @@ export default function AlertsPage() {
           </div>
         )}
       </main>
+  );
+}
+
+export default function AlertsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading alerts...</p>
+        </div>
+      </div>
+    }>
+      <AlertsContent />
+    </Suspense>
   );
 }

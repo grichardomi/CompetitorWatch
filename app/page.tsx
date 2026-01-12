@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/auth/auth-options';
+import Footer from '@/components/Footer';
 
 export default async function Home() {
   const session = await getServerSession(authOptions);
@@ -23,7 +24,7 @@ export default async function Home() {
             alt="MarketPulse"
             width={500}
             height={125}
-            className="h-40 md:h-32 lg:h-40 xl:h-48 w-auto"
+            className="h-16 md:h-16 lg:h-20 xl:h-24 w-auto"
             priority
           />
         </Link>
@@ -73,12 +74,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-gray-200 py-8 px-4">
-        <div className="container mx-auto text-center text-gray-600">
-          <p>&copy; 2024 MarketPulse. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </main>
   );
 }

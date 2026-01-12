@@ -159,7 +159,7 @@ export async function canAddCompetitor(userId: number): Promise<{
   // Get current competitor count
   const competitorCount = await db.competitor.count({
     where: {
-      business: {
+      Business: {
         userId,
       },
     },

@@ -182,6 +182,7 @@ async function testChangeDetectionAndAlerts() {
           userId: user.id,
           industry: TEST_CONFIG.testIndustry,
           location: 'Test Location',
+          updatedAt: new Date(),
         },
       });
       logSuccess('Test business created');
@@ -203,6 +204,7 @@ async function testChangeDetectionAndAlerts() {
           businessId: business.id,
           name: TEST_CONFIG.testCompetitorName,
           url: TEST_CONFIG.testUrl,
+          updatedAt: new Date(),
         },
       });
       logSuccess('Test competitor created');

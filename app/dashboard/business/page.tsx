@@ -269,7 +269,7 @@ export default function BusinessSettingsPage() {
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-blue-900 mb-2">Why can't I change my industry?</h3>
+                <h3 className="font-semibold text-blue-900 mb-2">Why can&apos;t I change my industry?</h3>
                 <p className="text-sm text-blue-800 mb-3">
                   Your industry setting determines how we extract and analyze competitor data. Changing it
                   after onboarding would invalidate existing data and break historical comparisons.
@@ -279,7 +279,7 @@ export default function BusinessSettingsPage() {
                   <a href="mailto:support@marketpulse.com" className="underline font-medium">
                     contact support
                   </a>{' '}
-                  and we'll help you migrate your account.
+                  and we&apos;ll help you migrate your account.
                 </p>
               </div>
             </div>

@@ -63,7 +63,7 @@ export async function processJob(job: CrawlJob): Promise<ProcessResult> {
     // Get competitor and business info
     const competitor = await db.competitor.findUnique({
       where: { id: job.competitorId },
-      include: { business: true },
+      include: { Business: true },
     });
 
     if (!competitor) {
@@ -140,7 +140,7 @@ export async function processJob(job: CrawlJob): Promise<ProcessResult> {
       // Determine effective industry for this competitor
       let effectiveIndustry = getEffectiveIndustry(
         competitor,
-        competitor.business.industry
+        competitor.Business.industry
       );
 
       // If this is first crawl or low confidence, re-detect with HTML content
@@ -157,7 +157,7 @@ export async function processJob(job: CrawlJob): Promise<ProcessResult> {
         const detection = await detectCompetitorIndustry(
           competitor.url,
           html,
-          competitor.business.industry as Industry
+          competitor.Business.industry as Industry
         );
 
         // Update competitor with improved detection

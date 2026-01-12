@@ -4,15 +4,19 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import { SubscriptionProvider, useSubscription } from '@/lib/providers/SubscriptionProvider';
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
   const { subscription } = useSubscription();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Header subscription={subscription} />
-      {children}
+      <div className="flex-1">
+        {children}
+      </div>
+      <Footer />
     </div>
   );
 }

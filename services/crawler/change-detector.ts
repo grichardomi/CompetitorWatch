@@ -1,6 +1,7 @@
 import { db } from '@/lib/db/prisma';
 import { ExtractedData } from './ai-extractor';
 import { enqueueAlertEmail } from '@/lib/email/enqueue';
+import { sendAlertPushNotification } from '@/lib/notifications/sendPushNotification';
 
 export interface ChangeDetectionResult {
   hasChanges: boolean;
@@ -69,6 +70,11 @@ export async function detectChanges(
       enqueueAlertEmail(priceAlert.id).catch((err) => {
         console.error('Failed to enqueue price alert email:', err);
       });
+
+      // Send push notification
+      sendAlertPushNotification(priceAlert.id).catch((err) => {
+        console.error('Failed to send price alert push notification:', err);
+      });
     }
 
     if (changes.changeTypes.includes('new_promotion')) {
@@ -88,6 +94,11 @@ export async function detectChanges(
       enqueueAlertEmail(promotionAlert.id).catch((err) => {
         console.error('Failed to enqueue promotion alert email:', err);
       });
+
+      // Send push notification
+      sendAlertPushNotification(promotionAlert.id).catch((err) => {
+        console.error('Failed to send promotion alert push notification:', err);
+      });
     }
 
     if (changes.changeTypes.includes('menu_change')) {
@@ -106,6 +117,11 @@ export async function detectChanges(
       // Enqueue email notification
       enqueueAlertEmail(menuAlert.id).catch((err) => {
         console.error('Failed to enqueue menu alert email:', err);
+      });
+
+      // Send push notification
+      sendAlertPushNotification(menuAlert.id).catch((err) => {
+        console.error('Failed to send menu alert push notification:', err);
       });
     }
 

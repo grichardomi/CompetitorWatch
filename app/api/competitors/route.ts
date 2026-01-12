@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
     const user = await db.user.findUnique({
       where: { email: session.user.email },
       include: {
-        businesses: {
+        Business: {
           select: {
             id: true,
           },
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
       return Response.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const businessId = user.businesses[0]?.id;
+    const businessId = user.Business[0]?.id;
 
     if (!businessId) {
       return Response.json({
@@ -65,8 +65,8 @@ export async function GET(req: NextRequest) {
         include: {
           _count: {
             select: {
-              alerts: { where: { isRead: false } },
-              priceSnapshots: true,
+              Alert: { where: { isRead: false } },
+              PriceSnapshot: true,
             },
           },
         },
@@ -83,8 +83,16 @@ export async function GET(req: NextRequest) {
 
     const limit = subscription?.competitorLimit || 5;
 
+    const formattedCompetitors = competitors.map((competitor) => ({
+      ...competitor,
+      _count: {
+        alerts: competitor._count.Alert,
+        priceSnapshots: competitor._count.PriceSnapshot,
+      },
+    }));
+
     return Response.json({
-      competitors,
+      competitors: formattedCompetitors,
       limit,
       plan: subscription?.status || 'free',
       currentCount: total,
@@ -121,7 +129,7 @@ export async function POST(req: NextRequest) {
     const user = await db.user.findUnique({
       where: { email: session.user.email },
       include: {
-        businesses: true,
+        Business: true,
       },
     });
 
@@ -130,14 +138,14 @@ export async function POST(req: NextRequest) {
     }
 
     // Get user's business
-    if (!user.businesses || user.businesses.length === 0) {
+    if (!user.Business || user.Business.length === 0) {
       return Response.json(
         { error: 'Please complete business setup first' },
         { status: 400 }
       );
     }
 
-    const business = user.businesses[0];
+    const business = user.Business[0];
 
     // Validate industry allows competitor creation
     const industryValidation = await validateIndustryForCompetitor(business.id);
@@ -196,6 +204,7 @@ export async function POST(req: NextRequest) {
         detectedIndustry: business.industry,
         industry: business.industry,
         industryConfidence: 0.5,
+        updatedAt: new Date(),
       },
     });
 

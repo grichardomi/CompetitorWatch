@@ -14,7 +14,7 @@ export async function checkCompetitorLimit(userId: number) {
 
   const competitorCount = await db.competitor.count({
     where: {
-      business: {
+      Business: {
         userId,
       },
     },
@@ -51,7 +51,7 @@ export async function getSubscriptionStatus(userId: number) {
 
   const competitorCount = await db.competitor.count({
     where: {
-      business: {
+      Business: {
         userId,
       },
     },

@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
     const trials = await db.subscription.findMany({
       where,
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             email: true,
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
       trials.map(async (trial) => {
         const competitorCount = await db.competitor.count({
           where: {
-            business: {
+            Business: {
               userId: trial.userId,
             },
           },
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
         return {
           id: trial.id,
           userId: trial.userId,
-          user: trial.user,
+          user: trial.User,
           status: trial.status,
           currentPeriodStart: trial.currentPeriodStart,
           currentPeriodEnd: trial.currentPeriodEnd,

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Footer from '@/components/Footer';
 
 export default function Pricing() {
   const { status } = useSession();
@@ -209,6 +210,8 @@ export default function Pricing() {
           </p>
         </div>
       </main>
+
+      <Footer />
     </div>
   );
 }

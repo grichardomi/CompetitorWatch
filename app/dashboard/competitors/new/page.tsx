@@ -124,7 +124,7 @@ export default function NewCompetitorPage() {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
               <p className="text-xs text-gray-600 mt-1">
-                We'll monitor this URL for pricing and content changes
+                We&apos;ll monitor this URL for pricing and content changes
               </p>
             </div>
 
@@ -149,7 +149,7 @@ export default function NewCompetitorPage() {
                 <option value={2880}>Every 48 hours</option>
               </select>
               <p className="text-xs text-gray-600 mt-1">
-                How often we'll check the website for changes
+                How often we&apos;ll check the website for changes
               </p>
             </div>
 

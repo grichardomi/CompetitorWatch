@@ -15,7 +15,7 @@ export async function GET() {
     const user = await db.user.findUnique({
       where: { email: session.user.email },
       include: {
-        businesses: {
+        Business: {
           orderBy: { createdAt: 'asc' },
           take: 1,
         },
@@ -26,14 +26,14 @@ export async function GET() {
       return Response.json({ error: 'User not found' }, { status: 404 });
     }
 
-    if (!user.businesses || user.businesses.length === 0) {
+    if (!user.Business || user.Business.length === 0) {
       return Response.json(
         { error: 'No business found. Please complete onboarding first.' },
         { status: 404 }
       );
     }
 
-    const business = user.businesses[0];
+    const business = user.Business[0];
 
     return Response.json({
       id: business.id,
@@ -64,7 +64,7 @@ export async function PATCH(req: Request) {
     const user = await db.user.findUnique({
       where: { email: session.user.email },
       include: {
-        businesses: {
+        Business: {
           orderBy: { createdAt: 'asc' },
           take: 1,
         },
@@ -75,14 +75,14 @@ export async function PATCH(req: Request) {
       return Response.json({ error: 'User not found' }, { status: 404 });
     }
 
-    if (!user.businesses || user.businesses.length === 0) {
+    if (!user.Business || user.Business.length === 0) {
       return Response.json(
         { error: 'No business found. Please complete onboarding first.' },
         { status: 404 }
       );
     }
 
-    const business = user.businesses[0];
+    const business = user.Business[0];
 
     // Parse request body
     const body = await req.json();

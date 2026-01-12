@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
         },
       },
       include: {
-        user: {
+        User: {
           select: {
             id: true,
             email: true,
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
 
       return {
         userId: paid.userId,
-        userEmail: trial.user.email,
+        userEmail: trial.User.email,
         trialStart: trialStart.toISOString(),
         convertedAt: conversionDate.toISOString(),
         daysToConvert,

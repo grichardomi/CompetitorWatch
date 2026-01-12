@@ -309,7 +309,7 @@ export default function SecurityPage() {
               <li>• Use a strong, unique password for MarketPulse</li>
               <li>• Your password should be at least 8 characters with uppercase, lowercase, and numbers</li>
               <li>• Never share your password with anyone</li>
-              <li>• You'll be automatically signed out after changing your password</li>
+              <li>• You&apos;ll be automatically signed out after changing your password</li>
               {!profile?.hasPassword && (
                 <li>• Adding a password lets you sign in with email even without Google access</li>
               )}

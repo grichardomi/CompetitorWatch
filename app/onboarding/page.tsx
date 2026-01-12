@@ -8,6 +8,7 @@ import {
   DEFAULT_INDUSTRY,
   type Industry,
 } from '@/lib/config/industries';
+import CompetitorDiscovery from '@/components/onboarding/CompetitorDiscovery';
 
 type OnboardingStep = 1 | 2 | 3 | 4;
 
@@ -15,11 +16,6 @@ interface BusinessData {
   name: string;
   location: string;
   industry: Industry;
-}
-
-interface CompetitorData {
-  name: string;
-  url: string;
 }
 
 interface PreferencesData {
@@ -37,6 +33,7 @@ export default function OnboardingPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [checkingStatus, setCheckingStatus] = useState(true);
+  const [competitorLimit, setCompetitorLimit] = useState<number>(3);
 
   const [businessData, setBusinessData] = useState<BusinessData>({
     name: '',
@@ -44,10 +41,7 @@ export default function OnboardingPage() {
     industry: DEFAULT_INDUSTRY,
   });
 
-  const [competitorData, setCompetitorData] = useState<CompetitorData>({
-    name: '',
-    url: '',
-  });
+  const [discoveredCompetitors, setDiscoveredCompetitors] = useState<any[]>([]);
 
   const [preferencesData, setPreferencesData] = useState<PreferencesData>({
     emailEnabled: true,
@@ -74,6 +68,12 @@ export default function OnboardingPage() {
         // User already completed onboarding, redirect to dashboard
         router.push('/dashboard');
       } else {
+        // Fetch competitor limit
+        const limitRes = await fetch('/api/subscription/limit');
+        if (limitRes.ok) {
+          const limitData = await limitRes.json();
+          setCompetitorLimit(limitData.competitorLimit || 3);
+        }
         setCheckingStatus(false);
       }
     } catch (err) {
@@ -117,48 +117,77 @@ export default function OnboardingPage() {
     }
   };
 
-  // Competitor step handler
-  const handleCompetitorSubmit = async () => {
-    if (!competitorData.name.trim()) {
-      setError('Please enter competitor name');
-      return;
+  // Parse location to extract city and state
+  const parseLocation = (location: string): { city: string; state: string; zipcode: string } => {
+    // Try to extract city, state, and zipcode from location string
+    // Format examples: "Austin, TX" or "Austin, TX 78701" or "123 Main St, Austin, TX 78701"
+    const parts = location.split(',').map(p => p.trim());
+    let city = '';
+    let state = '';
+    let zipcode = '';
+
+    if (parts.length >= 2) {
+      const lastPart = parts[parts.length - 1];
+      const secondLastPart = parts[parts.length - 2];
+
+      // Try to extract zipcode from last part (e.g., "TX 78701")
+      const zipcodeMatch = lastPart.match(/\b(\d{5})\b/);
+      if (zipcodeMatch) {
+        zipcode = zipcodeMatch[1];
+      }
+
+      // Check if last part looks like "TX" or "TX 78701"
+      const stateMatch = lastPart.match(/\b([A-Z]{2})\b/);
+      if (stateMatch) {
+        city = secondLastPart;
+        state = stateMatch[1];
+      } else {
+        city = secondLastPart;
+        state = lastPart.substring(0, 2).toUpperCase();
+      }
     }
 
-    if (!competitorData.url.trim()) {
-      setError('Please enter competitor URL');
-      return;
-    }
+    return { city, state, zipcode };
+  };
 
-    // Basic URL validation
-    try {
-      new URL(competitorData.url.startsWith('http') ? competitorData.url : `https://${competitorData.url}`);
-    } catch {
-      setError('Please enter a valid URL');
+  // Handle AI-discovered competitors
+  const handleDiscoveryComplete = async (competitors: any[]) => {
+    if (competitors.length === 0) {
+      setError('Please select at least one competitor');
       return;
     }
 
     setLoading(true);
     setError('');
+    setDiscoveredCompetitors(competitors);
 
     try {
-      const res = await fetch('/api/onboarding/competitor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(competitorData),
-      });
+      // Add all selected competitors
+      for (const comp of competitors) {
+        const res = await fetch('/api/onboarding/competitor', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: comp.name,
+            url: comp.website,
+          }),
+        });
 
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || 'Failed to add competitor');
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || `Failed to add ${comp.name}`);
+        }
       }
 
+      // Move to next step
       setStep(3);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add competitor');
+      setError(err instanceof Error ? err.message : 'Failed to add competitors');
     } finally {
       setLoading(false);
     }
   };
+
 
   // Preferences step handler
   const handlePreferencesSubmit = async () => {
@@ -326,65 +355,54 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {/* Step 2: Add Competitor */}
+        {/* Step 2: Competitor Discovery (AI-Powered) */}
         {step === 2 && (
-          <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
-            <h2 className="text-2xl font-bold mb-2">Add Your First Competitor</h2>
-            <p className="text-gray-600 mb-6">We&apos;ll monitor their website for changes</p>
+          <div>
+            {/* Back Button */}
+            <div className="mb-4">
+              <button
+                onClick={() => setStep(1)}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                <span>Back</span>
+              </button>
+            </div>
 
-            <form onSubmit={(e) => { e.preventDefault(); handleCompetitorSubmit(); }} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Competitor Name *
-                </label>
-                <input
-                  type="text"
-                  value={competitorData.name}
-                  onChange={(e) => setCompetitorData({ ...competitorData, name: e.target.value })}
-                  placeholder="e.g., Competitor Coffee"
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  disabled={loading}
-                />
+            {/* Discovery Component */}
+            <div className="bg-white rounded-lg border border-gray-200 p-6 md:p-8 shadow-sm">
+              <CompetitorDiscovery
+                onComplete={handleDiscoveryComplete}
+                onSkip={() => router.push('/dashboard/competitors/new')}
+                initialIndustry={businessData.industry}
+                initialCity={parseLocation(businessData.location).city}
+                initialState={parseLocation(businessData.location).state}
+                initialZipcode={parseLocation(businessData.location).zipcode}
+                maxSelectable={competitorLimit}
+              />
+            </div>
+
+            {/* Error Display */}
+            {error && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-sm text-red-700">{error}</p>
               </div>
+            )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-900 mb-2">
-                  Website URL *
-                </label>
-                <input
-                  type="url"
-                  value={competitorData.url}
-                  onChange={(e) => setCompetitorData({ ...competitorData, url: e.target.value })}
-                  placeholder="e.g., https://competitor.com"
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  disabled={loading}
-                />
-              </div>
-
-              {error && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-700">{error}</p>
-                </div>
-              )}
-
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  disabled={loading}
-                  className="flex-1 px-4 py-2 border border-gray-200 text-gray-900 rounded-lg font-medium hover:bg-gray-50 disabled:opacity-50 transition-colors"
-                >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {loading ? 'Saving...' : 'Continue'}
-                </button>
-              </div>
-            </form>
+            {/* Manual Entry Option */}
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-600 mb-2">
+                Prefer to add competitors manually?
+              </p>
+              <button
+                onClick={() => router.push('/dashboard/competitors/new')}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Skip Discovery - Add Manually →
+              </button>
+            </div>
           </div>
         )}
 
@@ -496,8 +514,36 @@ export default function OnboardingPage() {
             </div>
             <h2 className="text-2xl font-bold mb-2">You&apos;re all set!</h2>
             <p className="text-gray-600 mb-6">
-              Your dashboard is ready. We&apos;ll start monitoring <strong>{competitorData.name}</strong> every 12 hours for changes.
+              Your dashboard is ready. {discoveredCompetitors.length > 0 ? (
+                <>
+                  We&apos;ll start monitoring <strong>{discoveredCompetitors.length} competitor{discoveredCompetitors.length !== 1 ? 's' : ''}</strong> every 12 hours for changes.
+                </>
+              ) : (
+                <>
+                  You can add competitors from your dashboard to start monitoring.
+                </>
+              )}
             </p>
+
+            {discoveredCompetitors.length > 0 && (
+              <div className="mb-6 text-left bg-gray-50 rounded-lg p-4">
+                <p className="text-sm font-medium text-gray-900 mb-2">Monitoring:</p>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  {discoveredCompetitors.slice(0, 5).map((comp, index) => (
+                    <li key={index} className="flex items-center gap-2">
+                      <span className="text-green-600">✓</span>
+                      <span>{comp.name}</span>
+                    </li>
+                  ))}
+                  {discoveredCompetitors.length > 5 && (
+                    <li className="text-gray-500 italic">
+                      + {discoveredCompetitors.length - 5} more
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
+
             <button
               onClick={handleComplete}
               disabled={loading}

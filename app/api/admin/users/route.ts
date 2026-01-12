@@ -19,7 +19,7 @@ export async function GET() {
         role: true,
         createdAt: true,
         password: true,
-        subscriptions: {
+        Subscription: {
           orderBy: { createdAt: 'desc' },
           take: 1,
           select: {
@@ -27,14 +27,14 @@ export async function GET() {
             stripePriceId: true,
           },
         },
-        accounts: {
+        Account: {
           select: {
             provider: true,
           },
         },
         _count: {
           select: {
-            businesses: true,
+            Business: true,
           },
         },
       },
@@ -44,7 +44,7 @@ export async function GET() {
     const formattedUsers = users.map((user) => {
       const authMethods: string[] = [];
       if (user.password) authMethods.push('password');
-      user.accounts.forEach((account) => {
+      user.Account.forEach((account) => {
         if (account.provider === 'google') authMethods.push('google');
       });
 
@@ -54,9 +54,11 @@ export async function GET() {
         name: user.name,
         role: user.role,
         createdAt: user.createdAt,
-        subscription: user.subscriptions[0] || null,
+        subscription: user.Subscription[0] || null,
         authMethods,
-        _count: user._count,
+        _count: {
+          businesses: user._count.Business,
+        },
       };
     });
 

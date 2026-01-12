@@ -24,7 +24,7 @@ export async function GET(_req: NextRequest) {
       take: 10,
       orderBy: { detectedAt: 'desc' },
       include: {
-        competitor: {
+        Competitor: {
           select: { id: true, name: true, url: true },
         },
       },
@@ -35,7 +35,7 @@ export async function GET(_req: NextRequest) {
       take: 10,
       orderBy: { createdAt: 'desc' },
       include: {
-        competitor: {
+        Competitor: {
           select: { id: true, name: true },
         },
       },
@@ -59,8 +59,8 @@ export async function GET(_req: NextRequest) {
         })),
         recentCrawls: recentCrawls.map((r) => ({
           id: r.id,
-          competitor: r.competitor.name,
-          competitorId: r.competitor.id,
+          competitor: r.Competitor.name,
+          competitorId: r.Competitor.id,
           timestamp: r.detectedAt,
           pricesCount: (r.extractedData as any).prices?.length || 0,
           promotionsCount: (r.extractedData as any).promotions?.length || 0,
@@ -68,7 +68,7 @@ export async function GET(_req: NextRequest) {
         recentAlerts: recentAlerts.map((a) => ({
           id: a.id,
           type: a.alertType,
-          competitor: a.competitor?.name,
+          competitor: a.Competitor?.name,
           message: a.message,
           timestamp: a.createdAt,
           isRead: a.isRead,

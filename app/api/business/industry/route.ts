@@ -19,7 +19,7 @@ export async function PATCH(req: Request) {
     const user = await db.user.findUnique({
       where: { email: session.user.email },
       include: {
-        businesses: true,
+        Business: true,
       },
     });
 
@@ -28,14 +28,14 @@ export async function PATCH(req: Request) {
     }
 
     // Get user's business
-    if (!user.businesses || user.businesses.length === 0) {
+    if (!user.Business || user.Business.length === 0) {
       return Response.json(
         { error: 'No business found' },
         { status: 404 }
       );
     }
 
-    const business = user.businesses[0];
+    const business = user.Business[0];
 
     // Parse and validate request
     const body = await req.json();

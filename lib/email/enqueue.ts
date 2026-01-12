@@ -86,12 +86,12 @@ export async function enqueueAlertEmail(alertId: number): Promise<{ success: boo
     const alert = await db.alert.findUnique({
       where: { id: alertId },
       include: {
-        business: {
+        Business: {
           include: {
-            user: true,
+            User: true,
           },
         },
-        competitor: true,
+        Competitor: true,
       },
     });
 
@@ -99,13 +99,13 @@ export async function enqueueAlertEmail(alertId: number): Promise<{ success: boo
       return { success: false, reason: 'Alert not found' };
     }
 
-    if (!alert.business?.user?.email) {
+    if (!alert.Business?.User?.email) {
       return { success: false, reason: 'User email not found' };
     }
 
     // Prepare template data
     const templateData = {
-      competitorName: alert.competitor?.name || 'Unknown Competitor',
+      competitorName: alert.Competitor?.name || 'Unknown Competitor',
       alertType: alert.alertType,
       message: alert.message,
       details: alert.details,
@@ -115,8 +115,8 @@ export async function enqueueAlertEmail(alertId: number): Promise<{ success: boo
 
     // Enqueue email
     return await enqueueEmail({
-      userId: alert.business!.userId,
-      toEmail: alert.business!.user.email,
+      userId: alert.Business!.userId,
+      toEmail: alert.Business!.User.email,
       templateName: 'alert_notification',
       templateData,
       alertType: alert.alertType,

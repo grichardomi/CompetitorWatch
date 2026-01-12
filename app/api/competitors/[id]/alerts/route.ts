@@ -28,7 +28,7 @@ export async function GET(
     const competitor = await db.competitor.findFirst({
       where: {
         id: parseInt(id),
-        business: { userId: user.id },
+        Business: { userId: user.id },
       },
     });
 
