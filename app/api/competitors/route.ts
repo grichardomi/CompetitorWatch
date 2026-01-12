@@ -4,9 +4,25 @@ import { db } from '@/lib/db/prisma';
 import { createCompetitorSchema } from '@/lib/validation/competitor';
 import { normalizeUrl } from '@/lib/utils/format';
 import { canAddCompetitor } from '@/lib/middleware/check-subscription';
+import { validateIndustryForCompetitor } from '@/lib/validation/industry-validation';
+import { detectCompetitorIndustry } from '@/services/competitor/industry-detector';
+import { type Industry } from '@/lib/config/industries';
+import { apiLimiter, getClientIdentifier, rateLimitResponse } from '@/lib/rate-limit';
+import { NextRequest } from 'next/server';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const identifier = getClientIdentifier(req);
+  const rateLimitResult = apiLimiter.check(req, 60, identifier);
+
+  if (!rateLimitResult.success) {
+    return rateLimitResponse(rateLimitResult.reset);
+  }
   try {
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const pageSize = parseInt(searchParams.get('pageSize') || '50', 10);
+    const skip = (page - 1) * pageSize;
+
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -18,18 +34,8 @@ export async function GET() {
       where: { email: session.user.email },
       include: {
         businesses: {
-          include: {
-            competitors: {
-              include: {
-                _count: {
-                  select: {
-                    alerts: { where: { isRead: false } },
-                    priceSnapshots: true,
-                  },
-                },
-              },
-              orderBy: { createdAt: 'desc' },
-            },
+          select: {
+            id: true,
           },
         },
       },
@@ -39,13 +45,41 @@ export async function GET() {
       return Response.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const competitors = user.businesses[0]?.competitors || [];
+    const businessId = user.businesses[0]?.id;
 
-    // Get user's subscription
-    const subscription = await db.subscription.findFirst({
-      where: { userId: user.id },
-      orderBy: { createdAt: 'desc' },
-    });
+    if (!businessId) {
+      return Response.json({
+        competitors: [],
+        limit: 5,
+        plan: 'free',
+        currentCount: 0,
+        total: 0,
+        page,
+        pageSize,
+      });
+    }
+
+    const [competitors, total, subscription] = await Promise.all([
+      db.competitor.findMany({
+        where: { businessId },
+        include: {
+          _count: {
+            select: {
+              alerts: { where: { isRead: false } },
+              priceSnapshots: true,
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: pageSize,
+      }),
+      db.competitor.count({ where: { businessId } }),
+      db.subscription.findFirst({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'desc' },
+      }),
+    ]);
 
     const limit = subscription?.competitorLimit || 5;
 
@@ -53,7 +87,11 @@ export async function GET() {
       competitors,
       limit,
       plan: subscription?.status || 'free',
-      currentCount: competitors.length,
+      currentCount: total,
+      total,
+      page,
+      pageSize,
+      totalPages: Math.ceil(total / pageSize),
     });
   } catch (error) {
     console.error('Failed to fetch competitors:', error);
@@ -64,8 +102,15 @@ export async function GET() {
   }
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
+    const identifier = getClientIdentifier(req);
+    const rateLimitResult = apiLimiter.check(req, 10, identifier);
+
+    if (!rateLimitResult.success) {
+      return rateLimitResponse(rateLimitResult.reset);
+    }
+
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
@@ -93,6 +138,15 @@ export async function POST(req: Request) {
     }
 
     const business = user.businesses[0];
+
+    // Validate industry allows competitor creation
+    const industryValidation = await validateIndustryForCompetitor(business.id);
+    if (!industryValidation.allowed) {
+      return Response.json(
+        { error: industryValidation.error || 'Cannot create competitor for this industry' },
+        { status: 403 }
+      );
+    }
 
     // Check if user can add a competitor (validates subscription status and limit)
     const canAdd = await canAddCompetitor(user.id);
@@ -130,7 +184,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // Create competitor
+    // Create competitor immediately with business industry as default
+    // Industry detection will happen asynchronously during first crawl
     const competitor = await db.competitor.create({
       data: {
         name: validatedData.name,
@@ -138,8 +193,28 @@ export async function POST(req: Request) {
         crawlFrequencyMinutes: validatedData.crawlFrequencyMinutes,
         isActive: validatedData.isActive,
         businessId: business.id,
+        detectedIndustry: business.industry,
+        industry: business.industry,
+        industryConfidence: 0.5,
       },
     });
+
+    // Queue industry detection in background (non-blocking)
+    detectCompetitorIndustry(
+      normalizedUrl,
+      undefined,
+      business.industry as Industry
+    ).then((industryDetection) => {
+      // Update competitor with detected industry asynchronously
+      db.competitor.update({
+        where: { id: competitor.id },
+        data: {
+          detectedIndustry: industryDetection.industry,
+          industry: industryDetection.industry,
+          industryConfidence: industryDetection.confidence,
+        },
+      }).catch((err) => console.error('Failed to update industry:', err));
+    }).catch((err) => console.error('Failed to detect industry:', err));
 
     return Response.json(
       {
@@ -150,7 +225,14 @@ export async function POST(req: Request) {
           url: competitor.url,
           crawlFrequencyMinutes: competitor.crawlFrequencyMinutes,
           isActive: competitor.isActive,
+          industry: competitor.industry,
+          detectedIndustry: competitor.detectedIndustry,
+          industryConfidence: competitor.industryConfidence,
           createdAt: competitor.createdAt,
+        },
+        industryDetection: {
+          status: 'pending',
+          message: 'Industry detection is running in the background and will update shortly',
         },
       },
       { status: 201 }

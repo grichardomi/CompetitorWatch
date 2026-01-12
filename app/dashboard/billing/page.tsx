@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Header from '@/components/Header';
 
 interface Subscription {
   status: string;
@@ -130,41 +131,10 @@ export default function BillingPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="container mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="text-2xl font-bold text-blue-600">
-              CompetitorWatch
-            </Link>
-
-            {/* Desktop Menu */}
-            <nav className="hidden md:flex items-center gap-8 flex-1 mx-8">
-              <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 font-medium">
-                Dashboard
-              </Link>
-              <Link href="/dashboard/competitors" className="text-gray-600 hover:text-gray-900 font-medium">
-                Competitors
-              </Link>
-              <Link href="/dashboard/alerts" className="text-gray-600 hover:text-gray-900 font-medium">
-                Alerts
-              </Link>
-              <Link
-                href="/dashboard/billing"
-                className="text-blue-600 font-medium border-b-2 border-blue-600"
-              >
-                Billing
-              </Link>
-              <Link href="/dashboard/settings" className="text-gray-600 hover:text-gray-900 font-medium">
-                Settings
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 sm:px-6 py-8">
+      <main className="container mx-auto px-4 sm:px-6 py-8 pb-20 md:pb-8">
         <h1 className="text-3xl font-bold mb-6">Billing & Subscription</h1>
 
         {/* Error message */}
@@ -318,31 +288,6 @@ export default function BillingPage() {
         </div>
       </main>
 
-      {/* Mobile Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden safe-bottom z-40">
-        <div className="flex justify-around">
-          {[
-            { label: 'Dashboard', href: '/dashboard', icon: '📊' },
-            { label: 'Competitors', href: '/dashboard/competitors', icon: '👥' },
-            { label: 'Alerts', href: '/dashboard/alerts', icon: '🔔' },
-            { label: 'Billing', href: '/dashboard/billing', icon: '💳' },
-            { label: 'Settings', href: '/dashboard/settings', icon: '⚙️' },
-          ].map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex flex-col items-center py-3 px-4 text-xs font-medium ${
-                item.href === '/dashboard/billing'
-                  ? 'text-blue-600'
-                  : 'text-gray-600 hover:text-blue-600'
-              }`}
-            >
-              <span className="text-lg mb-1">{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
-        </div>
-      </nav>
     </div>
   );
 }

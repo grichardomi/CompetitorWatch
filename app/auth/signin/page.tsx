@@ -23,6 +23,35 @@ function SignInContent() {
   const [error, setError] = useState<string | null>(
     urlError ? (errorMessages[urlError] || errorMessages.Default) : null
   );
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  const handleEmailSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      const result = await signIn('credentials', {
+        email,
+        password,
+        callbackUrl,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError(result.error);
+      } else if (result?.ok) {
+        window.location.href = callbackUrl;
+      }
+    } catch (err) {
+      setError('Failed to sign in. Please try again.');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
@@ -43,7 +72,7 @@ function SignInContent() {
           {/* Header */}
           <div className="mb-8 text-center">
             <Link href="/" className="inline-block text-2xl font-bold text-blue-600">
-              CompetitorWatch
+              MarketPulse
             </Link>
             <h1 className="mt-6 text-2xl font-bold">Welcome back</h1>
             <p className="mt-2 text-gray-600">
@@ -57,6 +86,75 @@ function SignInContent() {
               {error}
             </div>
           )}
+
+          {/* Email/Password Sign In Form */}
+          <form onSubmit={handleEmailSignIn} className="space-y-4">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                placeholder="you@example.com"
+                disabled={isLoading}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none pr-10"
+                  placeholder="Enter your password"
+                  disabled={isLoading}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  disabled={isLoading}
+                >
+                  {showPassword ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {isLoading ? 'Signing in...' : 'Sign in'}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="my-6 flex items-center">
+            <div className="flex-1 border-t border-gray-200"></div>
+            <span className="px-4 text-sm text-gray-500">or</span>
+            <div className="flex-1 border-t border-gray-200"></div>
+          </div>
 
           {/* Google Sign In */}
           <button
@@ -100,18 +198,11 @@ function SignInContent() {
 
         {/* Sign Up CTA */}
         <div className="mt-6 text-center">
-          <p className="text-gray-600 mb-3">
-            New to CompetitorWatch?
-          </p>
-          <button
-            onClick={handleGoogleSignIn}
-            disabled={isLoading}
-            className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            Sign up for a free 14-day trial
-          </button>
-          <p className="mt-2 text-xs text-gray-500">
-            (automatic on first sign in)
+          <p className="text-gray-600">
+            New to MarketPulse?{' '}
+            <Link href="/auth/signup" className="text-blue-600 hover:text-blue-700 font-medium underline">
+              Sign up for a free 14-day trial
+            </Link>
           </p>
         </div>
       </div>

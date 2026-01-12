@@ -130,7 +130,7 @@ export default function HonestPricing() {
       <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4">
         <div className="container mx-auto flex items-center justify-between">
           <Link href="/" className="text-2xl font-bold text-blue-600">
-            CompetitorWatch
+            MarketPulse
           </Link>
           <div className="flex items-center gap-4">
             {status === 'authenticated' ? (
@@ -273,7 +273,7 @@ export default function HonestPricing() {
 
         {/* Trust Section */}
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-2xl font-bold mb-4">Why Choose CompetitorWatch?</h2>
+          <h2 className="text-2xl font-bold mb-4">Why Choose MarketPulse?</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="p-4">
               <div className="text-3xl mb-2">🤖</div>
@@ -301,7 +301,7 @@ export default function HonestPricing() {
       {/* Footer */}
       <footer className="border-t border-gray-200 py-8 px-4 bg-white">
         <div className="container mx-auto text-center text-gray-600 text-sm">
-          <p className="mb-2">&copy; 2024 CompetitorWatch. All rights reserved.</p>
+          <p className="mb-2">&copy; 2024 MarketPulse. All rights reserved.</p>
           <div className="flex justify-center gap-4">
             <Link href="/roadmap" className="hover:text-gray-900">Product Roadmap</Link>
             <Link href="/terms" className="hover:text-gray-900">Terms</Link>

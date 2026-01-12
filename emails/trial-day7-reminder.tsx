@@ -19,13 +19,13 @@ interface TrialDay7ReminderProps {
 
 export default function TrialDay7Reminder({
   userName = 'there',
-  dashboardUrl = 'https://app.competitorwatch.com/dashboard',
+  dashboardUrl = 'https://app.marketpulse.com/dashboard',
   competitorsCount = 0,
 }: TrialDay7ReminderProps) {
   return (
     <Html>
       <Head />
-      <Preview>You're halfway through your CompetitorWatch trial!</Preview>
+      <Preview>You're halfway through your MarketPulse trial!</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={header}>
@@ -36,7 +36,7 @@ export default function TrialDay7Reminder({
             <Text style={paragraph}>Hi {userName},</Text>
 
             <Text style={paragraph}>
-              You're 7 days into your 14-day free trial of CompetitorWatch. Here's a quick update
+              You're 7 days into your 14-day free trial of MarketPulse. Here's a quick update
               on your competitive intelligence journey:
             </Text>
 
@@ -72,7 +72,7 @@ export default function TrialDay7Reminder({
           </Section>
 
           <Section style={footer}>
-            <Text style={footerText}>CompetitorWatch</Text>
+            <Text style={footerText}>MarketPulse</Text>
             <Link href={`${dashboardUrl}/settings`} style={link}>
               Notification Settings
             </Link>

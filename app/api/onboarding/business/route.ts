@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { db } from '@/lib/db/prisma';
 import { businessSchema } from '@/lib/validation/onboarding';
+import { DEFAULT_INDUSTRY } from '@/lib/config/industries';
 
 export async function POST(req: Request) {
   try {
@@ -35,6 +36,7 @@ export async function POST(req: Request) {
         data: {
           name: validatedData.name,
           location: validatedData.location,
+          industry: validatedData.industry,
         },
       });
 
@@ -50,6 +52,7 @@ export async function POST(req: Request) {
         userId: user.id,
         name: validatedData.name,
         location: validatedData.location,
+        industry: validatedData.industry || DEFAULT_INDUSTRY,
       },
     });
 

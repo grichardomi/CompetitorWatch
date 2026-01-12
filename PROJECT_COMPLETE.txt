@@ -5,7 +5,7 @@
 ║                                                                        ║
 ╚════════════════════════════════════════════════════════════════════════╝
 
-PROJECT NAME: CompetitorWatch
+PROJECT NAME: MarketPulse
 TYPE: Competitive Intelligence SaaS Platform
 STACK: Next.js 15 + React 19 + TypeScript + Prisma + PostgreSQL
 

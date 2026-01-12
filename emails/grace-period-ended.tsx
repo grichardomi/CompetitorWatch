@@ -18,12 +18,12 @@ interface GracePeriodEndedProps {
 
 export default function GracePeriodEnded({
   userName = 'there',
-  dashboardUrl = 'https://app.competitorwatch.com/dashboard',
+  dashboardUrl = 'https://app.marketpulse.com/dashboard',
 }: GracePeriodEndedProps) {
   return (
     <Html>
       <Head />
-      <Preview>Your CompetitorWatch grace period has ended</Preview>
+      <Preview>Your MarketPulse grace period has ended</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={header}>
@@ -34,7 +34,7 @@ export default function GracePeriodEnded({
             <Text style={paragraph}>Hi {userName},</Text>
 
             <Text style={paragraph}>
-              Your 3-day grace period has ended. Your CompetitorWatch account is now paused,
+              Your 3-day grace period has ended. Your MarketPulse account is now paused,
               and you no longer have access to your competitor monitoring data.
             </Text>
 
@@ -95,7 +95,7 @@ export default function GracePeriodEnded({
 
           <Section style={footer}>
             <Text style={footerText}>
-              CompetitorWatch - Competitive Intelligence Made Simple
+              MarketPulse - Competitive Intelligence Made Simple
             </Text>
             <Link href={`${dashboardUrl}/settings`} style={link}>
               Notification Settings

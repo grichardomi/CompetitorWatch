@@ -19,13 +19,13 @@ interface TrialEndedProps {
 
 export default function TrialEnded({
   userName = 'there',
-  dashboardUrl = 'https://app.competitorwatch.com/dashboard',
+  dashboardUrl = 'https://app.marketpulse.com/dashboard',
   gracePeriodDays = 3,
 }: TrialEndedProps) {
   return (
     <Html>
       <Head />
-      <Preview>Your CompetitorWatch trial has ended</Preview>
+      <Preview>Your MarketPulse trial has ended</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={header}>
@@ -36,7 +36,7 @@ export default function TrialEnded({
             <Text style={paragraph}>Hi {userName},</Text>
 
             <Text style={paragraph}>
-              Your 14-day free trial of CompetitorWatch has come to an end. We hope you enjoyed
+              Your 14-day free trial of MarketPulse has come to an end. We hope you enjoyed
               exploring our competitive intelligence platform!
             </Text>
 
@@ -52,7 +52,7 @@ export default function TrialEnded({
 
             <Section style={thankYouBox}>
               <Text style={thankYouText}>
-                Thank you for trying CompetitorWatch. We'd love to continue helping you stay ahead
+                Thank you for trying MarketPulse. We'd love to continue helping you stay ahead
                 of your competition.
               </Text>
             </Section>
@@ -98,7 +98,7 @@ export default function TrialEnded({
 
           <Section style={footer}>
             <Text style={footerText}>
-              Thank you for trying CompetitorWatch
+              Thank you for trying MarketPulse
             </Text>
             <Link href={`${dashboardUrl}/settings`} style={link}>
               Notification Settings

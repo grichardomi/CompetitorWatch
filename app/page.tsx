@@ -1,40 +1,42 @@
-'use client';
+'use server';
 
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { getServerSession } from 'next-auth';
+import { redirect } from 'next/navigation';
+import { authOptions } from '@/lib/auth/auth-options';
 
-export default function Home() {
-  const { status } = useSession();
-  const router = useRouter();
+export default async function Home() {
+  const session = await getServerSession(authOptions);
 
-  // Redirect authenticated users to dashboard
-  if (status === 'authenticated') {
-    router.push('/dashboard');
-    return null;
+  if (session) {
+    redirect('/dashboard');
   }
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
       {/* Navigation */}
-      <nav className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-200">
-        <div className="text-2xl font-bold text-blue-600">CompetitorWatch</div>
+      <nav className="flex items-center justify-between px-4 sm:px-6 py-2 md:py-3 lg:py-4 border-b border-gray-200">
+        <Link href="/">
+          <Image
+            src="/logo_transparent.png"
+            alt="MarketPulse"
+            width={500}
+            height={125}
+            className="h-40 md:h-32 lg:h-40 xl:h-48 w-auto"
+            priority
+          />
+        </Link>
         <div className="flex gap-4">
-          {status === 'loading' ? (
-            <div className="px-4 py-2 text-gray-400">Loading...</div>
-          ) : (
-            <>
-              <Link href="/pricing" className="px-4 py-2 text-gray-600 hover:text-gray-900">
-                Pricing
-              </Link>
-              <Link href="/auth/signin" className="px-4 py-2 text-gray-600 hover:text-gray-900">
-                Sign In
-              </Link>
-              <Link href="/auth/signin" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                Get Started
-              </Link>
-            </>
-          )}
+          <Link href="/pricing" className="px-4 py-2 text-gray-600 hover:text-gray-900">
+            Pricing
+          </Link>
+          <Link href="/auth/signin" className="px-4 py-2 text-gray-600 hover:text-gray-900">
+            Sign In
+          </Link>
+          <Link href="/auth/signin" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Get Started
+          </Link>
         </div>
       </nav>
 
@@ -53,7 +55,7 @@ export default function Home() {
 
       {/* Features */}
       <section className="container mx-auto px-4 py-16 sm:py-24">
-        <h2 className="text-3xl font-bold text-center mb-12">Why Choose CompetitorWatch?</h2>
+        <h2 className="text-3xl font-bold text-center mb-12">Why Choose MarketPulse?</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {[
             { title: 'Real-Time Alerts', desc: 'Get instant notifications when competitors change prices or promotions' },
@@ -74,7 +76,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-gray-200 py-8 px-4">
         <div className="container mx-auto text-center text-gray-600">
-          <p>&copy; 2024 CompetitorWatch. All rights reserved.</p>
+          <p>&copy; 2024 MarketPulse. All rights reserved.</p>
         </div>
       </footer>
     </main>

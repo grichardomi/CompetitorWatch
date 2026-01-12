@@ -3,12 +3,18 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import {
+  getIndustryOptions,
+  DEFAULT_INDUSTRY,
+  type Industry,
+} from '@/lib/config/industries';
 
 type OnboardingStep = 1 | 2 | 3 | 4;
 
 interface BusinessData {
   name: string;
   location: string;
+  industry: Industry;
 }
 
 interface CompetitorData {
@@ -35,6 +41,7 @@ export default function OnboardingPage() {
   const [businessData, setBusinessData] = useState<BusinessData>({
     name: '',
     location: '',
+    industry: DEFAULT_INDUSTRY,
   });
 
   const [competitorData, setCompetitorData] = useState<CompetitorData>({
@@ -277,6 +284,29 @@ export default function OnboardingPage() {
                   className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={loading}
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-900 mb-2">
+                  Industry *
+                </label>
+                <select
+                  value={businessData.industry}
+                  onChange={(e) =>
+                    setBusinessData({ ...businessData, industry: e.target.value as Industry })
+                  }
+                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={loading}
+                >
+                  {getIndustryOptions().map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-600 mt-1">
+                  Select your business industry for better competitor monitoring
+                </p>
               </div>
 
               {error && (

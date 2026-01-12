@@ -8,6 +8,7 @@ interface User {
   name: string | null;
   role: string;
   createdAt: string;
+  authMethods: string[];
   subscription?: {
     status: string;
     stripePriceId: string;
@@ -96,6 +97,7 @@ export default function AdminUsersPage() {
                 <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Email</th>
                 <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Name</th>
                 <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Role</th>
+                <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Auth</th>
                 <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Subscription</th>
                 <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Businesses</th>
                 <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Joined</th>
@@ -104,7 +106,7 @@ export default function AdminUsersPage() {
             <tbody>
               {filteredUsers.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-12 text-gray-600">
+                  <td colSpan={7} className="text-center py-12 text-gray-600">
                     {search ? 'No users match your search' : 'No users found'}
                   </td>
                 </tr>
@@ -121,6 +123,22 @@ export default function AdminUsersPage() {
                       }`}>
                         {user.role}
                       </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex gap-1">
+                        {user.authMethods.map((method) => (
+                          <span
+                            key={method}
+                            className="px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-700"
+                            title={method === 'google' ? 'Google OAuth' : 'Email/Password'}
+                          >
+                            {method === 'google' ? 'G' : 'P'}
+                          </span>
+                        ))}
+                        {user.authMethods.length === 0 && (
+                          <span className="text-sm text-gray-400">-</span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-3 px-4">
                       {user.subscription ? (

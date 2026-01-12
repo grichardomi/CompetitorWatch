@@ -1,9 +1,10 @@
 'use client';
 
-import { useSession, signOut } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Header from '@/components/Header';
 
 interface DashboardStats {
   competitorsCount: number;
@@ -112,57 +113,10 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="container mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="text-2xl font-bold text-blue-600">
-              CompetitorWatch
-            </Link>
-
-            {/* Desktop Menu */}
-            <nav className="hidden md:flex items-center gap-8 flex-1 mx-8">
-              <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 font-medium">
-                Dashboard
-              </Link>
-              <Link href="/dashboard/competitors" className="text-gray-600 hover:text-gray-900 font-medium">
-                Competitors
-              </Link>
-              <Link href="/dashboard/alerts" className="text-gray-600 hover:text-gray-900 font-medium">
-                Alerts
-              </Link>
-              <Link href="/dashboard/billing" className="text-gray-600 hover:text-gray-900 font-medium">
-                Billing
-              </Link>
-              <Link href="/dashboard/settings" className="text-gray-600 hover:text-gray-900 font-medium">
-                Settings
-              </Link>
-            </nav>
-
-            {/* User Menu */}
-            <div className="flex items-center gap-4">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium text-gray-900">{session.user?.name || session.user?.email}</p>
-                <p className="text-xs text-gray-600">
-                  {subscription?.status === 'trialing' && 'On Trial'}
-                  {subscription?.status === 'active' && 'Active'}
-                  {subscription?.status === 'past_due' && 'Past Due'}
-                  {!subscription && 'Free'}
-                </p>
-              </div>
-              <button
-                onClick={() => signOut({ callbackUrl: '/' })}
-                className="px-4 py-2 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
-              >
-                Sign out
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header subscription={subscription} />
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 sm:px-6 py-8">
+      <main className="container mx-auto px-4 sm:px-6 py-8 pb-20 md:pb-8">
         {/* Trial Expiration Banner */}
         {subscription?.status === 'trialing' && subscription?.daysRemaining !== null && subscription.daysRemaining <= 7 && (
           <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
@@ -204,38 +158,106 @@ export default function Dashboard() {
         </div>
 
         {/* CTA Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {/* Add Competitors */}
-          <div className="bg-white rounded-lg border border-gray-200 p-8">
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
               <span className="text-2xl">👥</span>
             </div>
             <h3 className="text-lg font-semibold mb-2">Add Competitors</h3>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 text-sm mb-4">
               Start monitoring your competitors&apos; websites for pricing changes and promotions.
             </p>
             <Link
               href="/dashboard/competitors"
-              className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              className="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
             >
               Add Competitor
             </Link>
           </div>
 
-          {/* View Settings */}
-          <div className="bg-white rounded-lg border border-gray-200 p-8">
+          {/* Profile Settings */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+              <span className="text-2xl">👤</span>
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Profile Settings</h3>
+            <p className="text-gray-600 text-sm mb-4">
+              Manage your account information, email, and authentication methods.
+            </p>
+            <Link
+              href="/dashboard/profile"
+              className="inline-block px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium text-sm"
+            >
+              Manage Profile
+            </Link>
+          </div>
+
+          {/* Business Settings */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
+              <span className="text-2xl">🏢</span>
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Business Settings</h3>
+            <p className="text-gray-600 text-sm mb-4">
+              Update your business name, location, and view your industry settings.
+            </p>
+            <Link
+              href="/dashboard/business"
+              className="inline-block px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium text-sm"
+            >
+              Edit Business
+            </Link>
+          </div>
+
+          {/* Security Settings */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4">
+              <span className="text-2xl">🔒</span>
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Security</h3>
+            <p className="text-gray-600 text-sm mb-4">
+              Change your password and manage account security settings.
+            </p>
+            <Link
+              href="/dashboard/security"
+              className="inline-block px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm"
+            >
+              Security Settings
+            </Link>
+          </div>
+
+          {/* Notification Settings */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
               <span className="text-2xl">⚙️</span>
             </div>
-            <h3 className="text-lg font-semibold mb-2">Notification Settings</h3>
-            <p className="text-gray-600 mb-4">
+            <h3 className="text-lg font-semibold mb-2">Notifications</h3>
+            <p className="text-gray-600 text-sm mb-4">
               Configure how and when you receive alerts about competitor changes.
             </p>
             <Link
               href="/dashboard/settings"
-              className="inline-block px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+              className="inline-block px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm"
             >
               View Settings
+            </Link>
+          </div>
+
+          {/* Billing */}
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
+              <span className="text-2xl">💳</span>
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Billing</h3>
+            <p className="text-gray-600 text-sm mb-4">
+              Manage your subscription, payment methods, and billing history.
+            </p>
+            <Link
+              href="/dashboard/billing"
+              className="inline-block px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium text-sm"
+            >
+              Manage Billing
             </Link>
           </div>
         </div>
@@ -248,32 +270,6 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
-
-      {/* Mobile Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden safe-bottom z-40">
-        <div className="flex justify-around">
-          {[
-            { label: 'Dashboard', href: '/dashboard', icon: '📊' },
-            { label: 'Competitors', href: '/dashboard/competitors', icon: '👥' },
-            { label: 'Alerts', href: '/dashboard/alerts', icon: '🔔' },
-            { label: 'Billing', href: '/dashboard/billing', icon: '💳' },
-            { label: 'Settings', href: '/dashboard/settings', icon: '⚙️' },
-          ].map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex flex-col items-center py-3 px-4 text-xs font-medium ${
-                item.href === '/dashboard'
-                  ? 'text-blue-600'
-                  : 'text-gray-600 hover:text-blue-600'
-              }`}
-            >
-              <span className="text-lg mb-1">{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
-        </div>
-      </nav>
     </div>
   );
 }

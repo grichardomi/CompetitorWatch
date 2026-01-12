@@ -33,7 +33,7 @@ function AuthErrorContent() {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm">
           <Link href="/" className="inline-block text-2xl font-bold text-blue-600 mb-6">
-            CompetitorWatch
+            MarketPulse
           </Link>
 
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">

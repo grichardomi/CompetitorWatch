@@ -1,4 +1,4 @@
-# 🎉 CompetitorWatch - Initial Project Setup Complete!
+# 🎉 MarketPulse - Initial Project Setup Complete!
 
 ## ✅ What Has Been Completed
 

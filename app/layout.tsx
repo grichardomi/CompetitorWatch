@@ -3,10 +3,11 @@ import { Providers } from './providers';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'CompetitorWatch - Competitor Intelligence Platform',
+  title: 'MarketPulse - Competitor Intelligence Platform',
   description: 'Monitor competitor pricing, promotions, and service changes in real-time.',
   icons: {
-    icon: '/favicon.ico',
+    icon: '/favicon.png',
+    apple: '/apple-touch-icon.png',
   },
 };
 

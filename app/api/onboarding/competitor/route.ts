@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { db } from '@/lib/db/prisma';
 import { competitorSchema } from '@/lib/validation/onboarding';
+import { validateIndustryForCompetitor } from '@/lib/validation/industry-validation';
 
 export async function POST(req: Request) {
   try {
@@ -28,6 +29,15 @@ export async function POST(req: Request) {
       return Response.json(
         { error: 'Please complete business setup first' },
         { status: 404 }
+      );
+    }
+
+    // Validate industry allows competitor creation
+    const industryValidation = await validateIndustryForCompetitor(business.id);
+    if (!industryValidation.allowed) {
+      return Response.json(
+        { error: industryValidation.error || 'Cannot create competitor for this industry' },
+        { status: 403 }
       );
     }
 

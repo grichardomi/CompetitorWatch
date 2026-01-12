@@ -298,7 +298,7 @@ input, select, textarea {
 ```typescript
 // /public/manifest.json
 {
-  "name": "CompetitorWatch",
+  "name": "MarketPulse",
   "short_name": "CompWatch",
   "description": "Monitor your competitors in real-time",
   "start_url": "/dashboard",
@@ -1307,7 +1307,7 @@ export async function createUserWithTrial(user: any) {
 {
   template: 'welcome',
   delay: 0,
-  subject: 'Welcome to CompetitorWatch! 👋',
+  subject: 'Welcome to MarketPulse! 👋',
   content: `
     - Thank you for joining
     - Your 14-day trial is active
@@ -2200,7 +2200,7 @@ export const EMAIL_FROM = 'alerts@yourapp.com';
 export const REPLY_TO = 'support@yourapp.com';
 
 export const EMAIL_TEMPLATES = {
-  welcome: 'Welcome to CompetitorWatch',
+  welcome: 'Welcome to MarketPulse',
   price_alert: 'Competitor Price Change Alert',
   promotion_alert: 'New Competitor Promotion',
   daily_digest: 'Daily Competitor Summary',
@@ -2451,7 +2451,7 @@ export default function PriceChangeEmail({
 // /lib/email/templates.ts
 export const templates = {
   welcome: {
-    subject: 'Welcome to CompetitorWatch 👋',
+    subject: 'Welcome to MarketPulse 👋',
     template: 'welcome.tsx',
   },
   price_change: {
@@ -2520,7 +2520,7 @@ export async function sendEmail(
         : template.subject;
 
     await resend.emails.send({
-      from: 'CompetitorWatch <alerts@competitorwatch.com>',
+      from: 'MarketPulse <alerts@marketpulse.com>',
       to: user.email,
       subject,
       react: await renderTemplate(template.template, data),

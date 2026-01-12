@@ -1,4 +1,4 @@
-# Quick Setup Guide for CompetitorWatch
+# Quick Setup Guide for MarketPulse
 
 This guide will get you up and running in 10 minutes.
 

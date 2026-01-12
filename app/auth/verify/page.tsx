@@ -6,7 +6,7 @@ export default function VerifyEmail() {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-lg border border-gray-200 p-8 shadow-sm text-center">
           <Link href="/" className="inline-block text-2xl font-bold text-blue-600 mb-6">
-            CompetitorWatch
+            MarketPulse
           </Link>
 
           <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">

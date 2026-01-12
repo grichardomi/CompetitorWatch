@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Header from '@/components/Header';
 
 interface NotificationPreferences {
   id: number;
@@ -166,49 +167,10 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div className="container mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="text-2xl font-bold text-blue-600">
-              CompetitorWatch
-            </Link>
-
-            {/* Desktop Menu */}
-            <nav className="hidden md:flex items-center gap-8 flex-1 mx-8">
-              <Link href="/dashboard" className="text-gray-600 hover:text-gray-900 font-medium">
-                Dashboard
-              </Link>
-              <Link
-                href="/dashboard/competitors"
-                className="text-gray-600 hover:text-gray-900 font-medium"
-              >
-                Competitors
-              </Link>
-              <Link href="/dashboard/alerts" className="text-gray-600 hover:text-gray-900 font-medium">
-                Alerts
-              </Link>
-              <Link href="/dashboard/billing" className="text-gray-600 hover:text-gray-900 font-medium">
-                Billing
-              </Link>
-              <Link
-                href="/dashboard/settings"
-                className="text-blue-600 font-medium border-b-2 border-blue-600"
-              >
-                Settings
-              </Link>
-            </nav>
-
-            {/* Title on mobile */}
-            <div className="md:hidden">
-              <h1 className="text-lg font-bold">Settings</h1>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 sm:px-6 py-8 max-w-4xl">
+      <main className="container mx-auto px-4 sm:px-6 py-8 max-w-4xl pb-20 md:pb-8">
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
             {error}
@@ -474,34 +436,42 @@ export default function SettingsPage() {
               <li>• SMS notifications require phone verification for security</li>
             </ul>
           </div>
+
+          {/* Danger Zone */}
+          <div className="bg-red-50 border-2 border-red-200 rounded-lg p-6">
+            <div className="flex gap-3">
+              <div className="flex-shrink-0">
+                <svg
+                  className="w-6 h-6 text-red-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                  />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-red-900 mb-2">Danger Zone</h3>
+                <p className="text-sm text-red-800 mb-4">
+                  Permanently delete your account and all associated data. This action cannot be undone.
+                </p>
+                <Link
+                  href="/dashboard/account/delete"
+                  className="inline-block px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm"
+                >
+                  Delete Account
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
 
-      {/* Mobile Bottom Nav */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden safe-bottom z-40">
-        <div className="flex justify-around">
-          {[
-            { label: 'Dashboard', href: '/dashboard', icon: '📊' },
-            { label: 'Competitors', href: '/dashboard/competitors', icon: '👥' },
-            { label: 'Alerts', href: '/dashboard/alerts', icon: '🔔' },
-            { label: 'Billing', href: '/dashboard/billing', icon: '💳' },
-            { label: 'Settings', href: '/dashboard/settings', icon: '⚙️' },
-          ].map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex flex-col items-center py-3 px-4 text-xs font-medium ${
-                item.href === '/dashboard/settings'
-                  ? 'text-blue-600'
-                  : 'text-gray-600 hover:text-blue-600'
-              }`}
-            >
-              <span className="text-lg mb-1">{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
-        </div>
-      </nav>
     </div>
   );
 }

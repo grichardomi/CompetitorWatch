@@ -88,7 +88,7 @@ export async function sendQueuedEmail(emailQueueId: number): Promise<{
     let emailResult: { success: boolean; error?: string } | null = null;
     try {
       await sendEmail({
-        from: 'alerts@competitorwatch.com',
+        from: 'alerts@marketpulse.com',
         to: queueEntry.toEmail,
         subject,
         html: renderResult.html,

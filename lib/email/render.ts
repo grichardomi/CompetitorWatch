@@ -76,12 +76,12 @@ export function generateSubject(alertType: string, competitorName?: string): str
     price_change: `💰 Price changes at ${competitorName}`,
     new_promotion: `🎉 New promotion at ${competitorName}`,
     menu_change: `🍽️ Menu updates at ${competitorName}`,
-    welcome: 'Welcome to CompetitorWatch! 🎉',
+    welcome: 'Welcome to MarketPulse! 🎉',
     trial_day7_reminder: 'Halfway through your trial',
     trial_day11_reminder: 'Your trial ends in 3 days',
     trial_ended: 'Your trial has ended',
-    grace_period_ended: 'Your CompetitorWatch access has expired',
+    grace_period_ended: 'Your MarketPulse access has expired',
   };
 
-  return subjects[alertType] || (competitorName ? `Update at ${competitorName}` : 'CompetitorWatch Update');
+  return subjects[alertType] || (competitorName ? `Update at ${competitorName}` : 'MarketPulse Update');
 }

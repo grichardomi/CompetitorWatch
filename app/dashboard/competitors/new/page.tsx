@@ -56,7 +56,7 @@ export default function NewCompetitorPage() {
         <div className="container mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="text-2xl font-bold text-blue-600">
-              CompetitorWatch
+              MarketPulse
             </Link>
 
             {/* Back Button */}

@@ -18,12 +18,18 @@ export async function GET() {
         name: true,
         role: true,
         createdAt: true,
+        password: true,
         subscriptions: {
           orderBy: { createdAt: 'desc' },
           take: 1,
           select: {
             status: true,
             stripePriceId: true,
+          },
+        },
+        accounts: {
+          select: {
+            provider: true,
           },
         },
         _count: {
@@ -35,15 +41,24 @@ export async function GET() {
     });
 
     // Format response
-    const formattedUsers = users.map((user) => ({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      createdAt: user.createdAt,
-      subscription: user.subscriptions[0] || null,
-      _count: user._count,
-    }));
+    const formattedUsers = users.map((user) => {
+      const authMethods: string[] = [];
+      if (user.password) authMethods.push('password');
+      user.accounts.forEach((account) => {
+        if (account.provider === 'google') authMethods.push('google');
+      });
+
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        createdAt: user.createdAt,
+        subscription: user.subscriptions[0] || null,
+        authMethods,
+        _count: user._count,
+      };
+    });
 
     return Response.json({ users: formattedUsers });
   } catch (error) {

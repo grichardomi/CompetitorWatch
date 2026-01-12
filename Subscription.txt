@@ -7,7 +7,7 @@ Here's the exact copy and configuration for your Stripe products:
 📦 Plan 1: Starter
 Stripe Product Details
 Product Name (Internal):
-CompetitorWatch - Starter Plan
+MarketPulse - Starter Plan
 
 Product Name (Customer-Facing):
 Starter
@@ -58,7 +58,7 @@ json{
 ### **Stripe Product Details**
 ```
 Product Name (Internal):
-CompetitorWatch - Professional Plan
+MarketPulse - Professional Plan
 
 Product Name (Customer-Facing):
 Professional
@@ -125,7 +125,7 @@ json{
 ### **Stripe Product Details**
 ```
 Product Name (Internal):
-CompetitorWatch - Enterprise Plan
+MarketPulse - Enterprise Plan
 
 Product Name (Customer-Facing):
 Enterprise
@@ -233,7 +233,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 async function setupStripeProducts() {
   // 1. STARTER PLAN
   const starterProduct = await stripe.products.create({
-    name: 'CompetitorWatch - Starter Plan',
+    name: 'MarketPulse - Starter Plan',
     description: 'Monitor up to 5 local competitors with daily price tracking and instant email alerts.',
     metadata: {
       plan_name: 'starter',
@@ -264,7 +264,7 @@ async function setupStripeProducts() {
 
   // 2. PROFESSIONAL PLAN
   const proProduct = await stripe.products.create({
-    name: 'CompetitorWatch - Professional Plan',
+    name: 'MarketPulse - Professional Plan',
     description: 'Monitor up to 20 competitors with twice-daily tracking, SMS alerts, and webhook integrations.',
     metadata: {
       plan_name: 'professional',
@@ -309,7 +309,7 @@ async function setupStripeProducts() {
 
   // 3. ENTERPRISE PLAN
   const enterpriseProduct = await stripe.products.create({
-    name: 'CompetitorWatch - Enterprise Plan',
+    name: 'MarketPulse - Enterprise Plan',
     description: 'Unlimited competitor monitoring with hourly tracking, API access, and dedicated support.',
     metadata: {
       plan_name: 'enterprise',
@@ -443,7 +443,7 @@ typescriptconst session = await stripe.checkout.sessions.create({
   allow_promotion_codes: true,
   
   // Custom success message
-  success_message: "Welcome to CompetitorWatch! Your account is now active.",
+  success_message: "Welcome to MarketPulse! Your account is now active.",
   
   // Metadata for tracking
   metadata: {

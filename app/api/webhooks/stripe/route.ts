@@ -339,7 +339,7 @@ async function handlePaymentSuccess(invoice: Stripe.Invoice) {
               <h2 style="color: #16a34a;">Payment Successful</h2>
               <p>Hi ${user.name || 'there'},</p>
               <p>Your payment has been processed successfully and your subscription is now active.</p>
-              <p>Thank you for continuing to use CompetitorWatch!</p>
+              <p>Thank you for continuing to use MarketPulse!</p>
               <p style="margin: 30px 0;">
                 <a href="${getDashboardUrl('/dashboard')}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
                   Go to Dashboard
@@ -396,7 +396,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
           <h2 style="color: #dc2626;">Payment Failed</h2>
           <p>Hi ${user.name || 'there'},</p>
           <p>We were unable to process your payment of <strong>$${amountDue}</strong>.</p>
-          <p>Your subscription is now in a past due status. Please update your payment method to continue using CompetitorWatch.</p>
+          <p>Your subscription is now in a past due status. Please update your payment method to continue using MarketPulse.</p>
           <p style="margin: 30px 0;">
             <a href="${invoiceUrl}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block;">
               Update Payment Method
@@ -457,7 +457,7 @@ async function handleTrialWillEnd(subscription: Stripe.Subscription) {
             <p style="font-size: 16px; line-height: 1.6; color: #374151;">Hi ${user.name || 'there'},</p>
 
             <p style="font-size: 16px; line-height: 1.6; color: #374151;">
-              Your <strong>14-day free trial</strong> of CompetitorWatch is coming to an end soon.
+              Your <strong>14-day free trial</strong> of MarketPulse is coming to an end soon.
               Don't lose access to your competitive intelligence!
             </p>
 
@@ -503,14 +503,14 @@ async function handleTrialWillEnd(subscription: Stripe.Subscription) {
             </p>
 
             <p style="font-size: 16px; line-height: 1.6; color: #374151;">
-              Thanks for trying CompetitorWatch!<br>
-              The CompetitorWatch Team
+              Thanks for trying MarketPulse!<br>
+              The MarketPulse Team
             </p>
           </div>
 
           <div style="text-align: center; padding: 30px 20px 20px; border-top: 1px solid #e5e7eb; margin-top: 40px;">
             <p style="color: #9ca3af; font-size: 14px; margin: 0;">
-              CompetitorWatch - Stay ahead of your competition
+              MarketPulse - Stay ahead of your competition
             </p>
             <p style="color: #9ca3af; font-size: 12px; margin: 10px 0 0 0;">
               <a href="${getDashboardUrl('/dashboard/settings')}" style="color: #2563eb; text-decoration: none;">Notification Settings</a>

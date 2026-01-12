@@ -1,4 +1,8 @@
 import { z } from 'zod';
+import { INDUSTRIES } from '@/lib/config/industries';
+
+// Define valid industries as Zod enum
+const validIndustries = Object.values(INDUSTRIES);
 
 export const businessSchema = z.object({
   name: z.string()
@@ -8,6 +12,9 @@ export const businessSchema = z.object({
     .max(200, 'Location cannot exceed 200 characters')
     .optional()
     .default(''),
+  industry: z
+    .enum(validIndustries as [string, ...string[]])
+    .default('restaurant_food'),
 });
 
 export const competitorSchema = z.object({

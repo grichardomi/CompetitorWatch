@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
@@ -13,13 +13,10 @@ interface Competitor {
   isActive: boolean;
 }
 
-export default function EditCompetitorPage({
-  params,
-}: {
-  params: { id: string };
-}) {
+export default function EditCompetitorPage() {
   const { status } = useSession();
   const router = useRouter();
+  const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -40,15 +37,17 @@ export default function EditCompetitorPage({
 
   // Load competitor data
   useEffect(() => {
-    if (status === 'authenticated') {
+    if (status === 'authenticated' && id) {
       loadCompetitor();
     }
-  }, [status, params.id]);
+  }, [status, id]);
 
   const loadCompetitor = async () => {
+    if (!id) return;
+
     try {
       setLoading(true);
-      const res = await fetch(`/api/competitors/${params.id}`);
+      const res = await fetch(`/api/competitors/${id}`);
 
       if (!res.ok) {
         if (res.status === 404) {
@@ -81,7 +80,7 @@ export default function EditCompetitorPage({
     setError('');
 
     try {
-      const res = await fetch(`/api/competitors/${params.id}`, {
+      const res = await fetch(`/api/competitors/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -92,7 +91,7 @@ export default function EditCompetitorPage({
         throw new Error(data.error || 'Failed to update competitor');
       }
 
-      router.push(`/dashboard/competitors/${params.id}`);
+      router.push(`/dashboard/competitors/${id}`);
     } catch (err) {
       console.error('Failed to update competitor:', err);
       setError(err instanceof Error ? err.message : 'Failed to update competitor');
@@ -104,7 +103,7 @@ export default function EditCompetitorPage({
   const handleDelete = async () => {
     try {
       setSaving(true);
-      const res = await fetch(`/api/competitors/${params.id}`, {
+      const res = await fetch(`/api/competitors/${id}`, {
         method: 'DELETE',
       });
 
@@ -148,7 +147,7 @@ export default function EditCompetitorPage({
         <div className="container mx-auto px-4 sm:px-6 py-4">
           <div className="flex items-center justify-between">
             <Link href="/" className="text-2xl font-bold text-blue-600">
-              CompetitorWatch
+              MarketPulse
             </Link>
 
             {/* Back Button */}

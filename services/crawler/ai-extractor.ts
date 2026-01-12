@@ -1,6 +1,7 @@
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 import { db } from '@/lib/db/prisma';
 import { hashContent, normalizeContent } from '@/lib/utils/hash';
+import { getExtractionPrompt, type Industry } from '@/lib/config/industries';
 
 export interface ExtractedData {
   prices: Array<{
@@ -24,30 +25,9 @@ export interface ExtractedData {
   raw_text?: string;
 }
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
-
-const EXTRACTION_PROMPT = `You are an expert at extracting structured data from website HTML content.
-
-Extract and return ONLY valid JSON (no markdown, no explanation) with the following structure:
-{
-  "prices": [{"item": "...", "price": "...", "currency": "USD", "category": "..."}],
-  "promotions": [{"title": "...", "description": "...", "discount": "...", "validUntil": "..."}],
-  "menu_items": [{"name": "...", "category": "...", "price": "...", "description": "..."}]
-}
-
-Rules:
-1. Extract ALL prices, promotions, and menu items visible on the page
-2. Keep prices exactly as shown (including currency symbols)
-3. For promotions, extract discount percentages or descriptions
-4. For menu items, extract name, category, price, and description if available
-5. If a section is empty, use an empty array
-6. Return ONLY the JSON object, nothing else
-7. Do not include null values
-
-HTML Content to Extract From:
-`;
 
 /**
  * Check extraction cache by hash
@@ -111,7 +91,10 @@ function fallbackExtraction(text: string): ExtractedData {
 /**
  * Extract structured data from HTML using Claude
  */
-export async function extractData(html: string): Promise<ExtractedData> {
+export async function extractData(
+  html: string,
+  industry?: Industry | null
+): Promise<ExtractedData> {
   // Compute hashes for caching
   const contentHash = hashContent(html);
   const normalizedHash = hashContent(normalizeContent(html));
@@ -131,33 +114,36 @@ export async function extractData(html: string): Promise<ExtractedData> {
     // Truncate HTML to avoid token limits
     const truncatedHtml = html.length > 30000 ? html.substring(0, 30000) : html;
 
-    // Call Claude Haiku for extraction
-    console.log('Calling Claude Haiku for extraction...');
-    const response = await client.messages.create({
-      model: 'claude-3-5-haiku-20241022',
+    // Call OpenAI GPT-4o-mini for extraction
+    console.log('Calling OpenAI GPT-4o-mini for extraction...');
+    const response = await client.chat.completions.create({
+      model: 'gpt-4o-mini',
       max_tokens: 2000,
+      temperature: 0.1, // Low temperature for consistent structured output
       messages: [
         {
           role: 'user',
-          content: EXTRACTION_PROMPT + truncatedHtml,
+          content: getExtractionPrompt(industry) + truncatedHtml,
         },
       ],
     });
 
     // Extract JSON from response
-    const responseText = response.content[0]?.type === 'text' ? response.content[0].text : '';
+    const responseText = response.choices[0]?.message?.content || '';
 
     if (!responseText) {
-      throw new Error('Empty response from Claude');
+      throw new Error('Empty response from OpenAI');
     }
 
-    // Parse JSON (Claude should return valid JSON)
+    // Parse JSON (OpenAI should return valid JSON)
     let extracted: ExtractedData;
     try {
-      extracted = JSON.parse(responseText);
+      // Remove markdown code blocks if present
+      const cleanedResponse = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      extracted = JSON.parse(cleanedResponse);
     } catch (parseError) {
-      console.error('Failed to parse Claude response:', responseText.substring(0, 200));
-      throw new Error('Claude returned invalid JSON');
+      console.error('Failed to parse OpenAI response:', responseText.substring(0, 200));
+      throw new Error('OpenAI returned invalid JSON');
     }
 
     // Validate structure
@@ -173,7 +159,7 @@ export async function extractData(html: string): Promise<ExtractedData> {
     return extracted;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Claude extraction failed:', errorMessage);
+    console.error('OpenAI extraction failed:', errorMessage);
 
     // Fallback to regex-based extraction
     const textContent = html;

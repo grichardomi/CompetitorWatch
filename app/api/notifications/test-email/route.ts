@@ -35,7 +35,7 @@ export async function POST(_request: NextRequest) {
     // Demo alert data
     const testAlertType = 'price_change';
     const testCompetitorName = 'Demo Restaurant';
-    const testMessage = 'This is a test email from CompetitorWatch. Your notification preferences are working correctly!';
+    const testMessage = 'This is a test email from MarketPulse. Your notification preferences are working correctly!';
     const testDetails = {
       updated: [
         {

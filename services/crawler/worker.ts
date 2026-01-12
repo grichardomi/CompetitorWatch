@@ -4,6 +4,8 @@ import { extractData } from './ai-extractor';
 import { detectChanges } from './change-detector';
 import { checkRateLimit } from './rate-limiter';
 import { hashContent } from '@/lib/utils/hash';
+import { type Industry } from '@/lib/config/industries';
+import { detectCompetitorIndustry, getEffectiveIndustry } from '../competitor/industry-detector';
 
 const CRAWL_TIMEOUT_MS = parseInt(process.env.CRAWLER_TIMEOUT_MS || '30000', 10);
 
@@ -131,11 +133,54 @@ export async function processJob(job: CrawlJob): Promise<ProcessResult> {
       };
     }
 
-    // Step 2: Extract data with Claude
+    // Step 2: Detect/verify industry and extract data
     console.log(`[Job ${job.id}] Extracting data`);
     let extractedData;
     try {
-      extractedData = await extractData(html);
+      // Determine effective industry for this competitor
+      let effectiveIndustry = getEffectiveIndustry(
+        competitor,
+        competitor.business.industry
+      );
+
+      // If this is first crawl or low confidence, re-detect with HTML content
+      const isFirstCrawl = !competitor.lastCrawledAt;
+      const hasLowConfidence =
+        competitor.industryConfidence &&
+        parseFloat(competitor.industryConfidence.toString()) < 0.7;
+
+      if ((isFirstCrawl || hasLowConfidence) && html) {
+        console.log(
+          `[Job ${job.id}] ${isFirstCrawl ? 'First crawl' : 'Low confidence'} - re-detecting industry with content`
+        );
+
+        const detection = await detectCompetitorIndustry(
+          competitor.url,
+          html,
+          competitor.business.industry as Industry
+        );
+
+        // Update competitor with improved detection
+        await db.competitor.update({
+          where: { id: competitor.id },
+          data: {
+            detectedIndustry: detection.industry,
+            industryConfidence: detection.confidence,
+            // Only update industry if not manually set
+            ...((!competitor.industry || competitor.industry === competitor.detectedIndustry) && {
+              industry: detection.industry,
+            }),
+          },
+        });
+
+        effectiveIndustry = detection.industry;
+        console.log(
+          `[Job ${job.id}] Industry updated: ${detection.industry} (${detection.confidence})`
+        );
+      }
+
+      console.log(`[Job ${job.id}] Using industry: ${effectiveIndustry}`);
+      extractedData = await extractData(html, effectiveIndustry);
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
       console.error(`[Job ${job.id}] Extraction failed: ${errorMsg}`);

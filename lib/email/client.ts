@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { EMAIL_CONFIG } from '@/lib/config/env';
 
 let resend: Resend | null = null;
 
@@ -12,7 +13,7 @@ export async function sendEmail({
   to,
   subject,
   html,
-  from = 'noreply@competitorwatch.com',
+  from = EMAIL_CONFIG.from,
 }: {
   to: string | string[];
   subject: string;

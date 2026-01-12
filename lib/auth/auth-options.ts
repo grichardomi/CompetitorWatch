@@ -1,6 +1,8 @@
 import type { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import CredentialsProvider from 'next-auth/providers/credentials';
 import { db } from '@/lib/db/prisma';
+import { verifyPassword } from '@/lib/auth/password';
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -12,6 +14,60 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID || '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
     }),
+    CredentialsProvider({
+      id: 'credentials',
+      name: 'Email and Password',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error('Please enter your email and password');
+        }
+
+        // Find user by email
+        const user = await db.user.findUnique({
+          where: { email: credentials.email.toLowerCase() },
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            password: true,
+            role: true,
+            image: true,
+          },
+        });
+
+        if (!user) {
+          throw new Error('Invalid email or password');
+        }
+
+        // Check if user has a password set
+        if (!user.password) {
+          throw new Error('This account uses social login. Please sign in with Google.');
+        }
+
+        // Verify password
+        const isPasswordValid = await verifyPassword(
+          credentials.password,
+          user.password
+        );
+
+        if (!isPasswordValid) {
+          throw new Error('Invalid email or password');
+        }
+
+        // Return user object (password excluded)
+        return {
+          id: user.id.toString(),
+          email: user.email,
+          name: user.name,
+          image: user.image,
+          role: user.role,
+        };
+      },
+    }),
   ],
   pages: {
     signIn: '/auth/signin',
@@ -22,6 +78,13 @@ export const authOptions: NextAuthOptions = {
       if (!user.email) return false;
 
       try {
+        // For Credentials provider, user already exists (verified in authorize)
+        // Just return true to allow sign in
+        if (!account) {
+          return true;
+        }
+
+        // OAuth flow (Google, etc.)
         // Check if user exists
         const existingUser = await db.user.findUnique({
           where: { email: user.email },
@@ -39,28 +102,26 @@ export const authOptions: NextAuthOptions = {
           });
 
           // Create Account record for OAuth
-          if (account) {
-            const newUser = await db.user.findUnique({
-              where: { email: user.email },
-            });
+          const newUser = await db.user.findUnique({
+            where: { email: user.email },
+          });
 
-            if (newUser) {
-              await db.account.create({
-                data: {
-                  userId: newUser.id,
-                  type: account.type,
-                  provider: account.provider,
-                  providerAccountId: account.providerAccountId,
-                  refresh_token: account.refresh_token,
-                  access_token: account.access_token,
-                  expires_at: account.expires_at,
-                  token_type: account.token_type,
-                  scope: account.scope,
-                  id_token: account.id_token,
-                  session_state: account.session_state,
-                },
-              });
-            }
+          if (newUser) {
+            await db.account.create({
+              data: {
+                userId: newUser.id,
+                type: account.type,
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
+                refresh_token: account.refresh_token,
+                access_token: account.access_token,
+                expires_at: account.expires_at,
+                token_type: account.token_type,
+                scope: account.scope,
+                id_token: account.id_token,
+                session_state: account.session_state,
+              },
+            });
           }
         } else {
           // Update existing user
@@ -73,31 +134,29 @@ export const authOptions: NextAuthOptions = {
           });
 
           // Update or create Account record
-          if (account) {
-            const existingAccount = await db.account.findFirst({
-              where: {
+          const existingAccount = await db.account.findFirst({
+            where: {
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+            },
+          });
+
+          if (!existingAccount) {
+            await db.account.create({
+              data: {
+                userId: existingUser.id,
+                type: account.type,
                 provider: account.provider,
                 providerAccountId: account.providerAccountId,
+                refresh_token: account.refresh_token,
+                access_token: account.access_token,
+                expires_at: account.expires_at,
+                token_type: account.token_type,
+                scope: account.scope,
+                id_token: account.id_token,
+                session_state: account.session_state,
               },
             });
-
-            if (!existingAccount) {
-              await db.account.create({
-                data: {
-                  userId: existingUser.id,
-                  type: account.type,
-                  provider: account.provider,
-                  providerAccountId: account.providerAccountId,
-                  refresh_token: account.refresh_token,
-                  access_token: account.access_token,
-                  expires_at: account.expires_at,
-                  token_type: account.token_type,
-                  scope: account.scope,
-                  id_token: account.id_token,
-                  session_state: account.session_state,
-                },
-              });
-            }
           }
         }
 

@@ -1,6 +1,6 @@
 # Production-Ready Configuration Guide
 
-This document explains how CompetitorWatch uses environment variables for production-ready, scalable configuration.
+This document explains how MarketPulse uses environment variables for production-ready, scalable configuration.
 
 ## Environment Configuration System
 

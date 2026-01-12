@@ -25,8 +25,8 @@ export default function AlertNotification({
   alertType = 'price_change',
   message = 'Changes detected',
   details = {},
-  dashboardUrl = 'https://competitorwatch.com/dashboard',
-  unsubscribeUrl = 'https://competitorwatch.com/settings/notifications',
+  dashboardUrl = 'https://marketpulse.com/dashboard',
+  unsubscribeUrl = 'https://marketpulse.com/settings/notifications',
 }: AlertEmailProps) {
   const alertTypeLabels: Record<string, { label: string; emoji: string }> = {
     price_change: { label: 'Price Change', emoji: '💰' },
@@ -55,7 +55,7 @@ export default function AlertNotification({
         <Container style={container}>
           {/* Header */}
           <Section style={header}>
-            <Heading style={h1}>CompetitorWatch</Heading>
+            <Heading style={h1}>MarketPulse</Heading>
           </Section>
 
           {/* Alert Badge */}

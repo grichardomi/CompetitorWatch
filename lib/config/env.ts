@@ -18,7 +18,7 @@ function getOptionalEnv(key: string, defaultValue: string): string {
 
 // App Configuration
 export const APP_CONFIG = {
-  name: getOptionalEnv('NEXT_PUBLIC_APP_NAME', 'CompetitorWatch'),
+  name: getOptionalEnv('NEXT_PUBLIC_APP_NAME', 'MarketPulse'),
   url: getRequiredEnv('NEXT_PUBLIC_APP_URL'),
   env: getOptionalEnv('NODE_ENV', 'development'),
   isDevelopment: process.env.NODE_ENV === 'development',
@@ -81,8 +81,8 @@ export const STRIPE_CONFIG = {
 
 // Email Configuration
 export const EMAIL_CONFIG = {
-  from: getOptionalEnv('EMAIL_FROM', 'noreply@competitorwatch.com'),
-  replyTo: getOptionalEnv('EMAIL_REPLY_TO', 'support@competitorwatch.com'),
+  from: getOptionalEnv('EMAIL_FROM', 'noreply@marketpulse.com'),
+  replyTo: getOptionalEnv('EMAIL_REPLY_TO', 'support@marketpulse.com'),
 
   // Resend API
   resendApiKey: getOptionalEnv('RESEND_API_KEY', ''),

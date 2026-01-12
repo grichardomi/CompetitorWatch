@@ -20,7 +20,7 @@ interface WelcomeEmailProps {
 export default function WelcomeEmail({
   userName = 'there',
   trialEndDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-  dashboardUrl = 'https://app.competitorwatch.com/dashboard',
+  dashboardUrl = 'https://app.marketpulse.com/dashboard',
 }: WelcomeEmailProps) {
   const formattedDate = new Date(trialEndDate).toLocaleDateString('en-US', {
     month: 'long',
@@ -31,18 +31,18 @@ export default function WelcomeEmail({
   return (
     <Html>
       <Head />
-      <Preview>Welcome to CompetitorWatch - Your 14-day trial has started!</Preview>
+      <Preview>Welcome to MarketPulse - Your 14-day trial has started!</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={header}>
-            <Heading style={h1}>Welcome to CompetitorWatch!</Heading>
+            <Heading style={h1}>Welcome to MarketPulse!</Heading>
           </Section>
 
           <Section style={content}>
             <Text style={paragraph}>Hi {userName},</Text>
 
             <Text style={paragraph}>
-              Thank you for signing up for CompetitorWatch! Your 14-day free trial has started, and
+              Thank you for signing up for MarketPulse! Your 14-day free trial has started, and
               you now have access to all features to monitor your competitors.
             </Text>
 
@@ -80,7 +80,7 @@ export default function WelcomeEmail({
 
           <Section style={footer}>
             <Text style={footerText}>
-              CompetitorWatch - Stay ahead of your competition
+              MarketPulse - Stay ahead of your competition
             </Text>
             <Link href={`${dashboardUrl}/settings`} style={link}>
               Notification Settings

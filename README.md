@@ -1,4 +1,4 @@
-# CompetitorWatch - Competitive Intelligence SaaS Platform
+# MarketPulse - Competitive Intelligence SaaS Platform
 
 A modern SaaS platform for monitoring competitor pricing, promotions, and service changes in real-time. Built with Next.js 15, TypeScript, Prisma, and PostgreSQL.
 
@@ -489,4 +489,4 @@ Contributions welcome! Please follow the code style and open a pull request.
 3. Run `npm run dev` to start development server
 4. Navigate to `http://localhost:3000`
 5. Implement API routes from [ARCHITECTURE.md](./ARCHITECTURE.md)
-# CompetitorWatch
+# MarketPulse

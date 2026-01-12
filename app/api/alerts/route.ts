@@ -1,9 +1,18 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/auth-options';
 import { db } from '@/lib/db/prisma';
+import { apiLimiter, getClientIdentifier, rateLimitResponse } from '@/lib/rate-limit';
+import { NextRequest } from 'next/server';
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
+    const identifier = getClientIdentifier(req);
+    const rateLimitResult = apiLimiter.check(req, 60, identifier);
+
+    if (!rateLimitResult.success) {
+      return rateLimitResponse(rateLimitResult.reset);
+    }
+
     // Check authentication
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
