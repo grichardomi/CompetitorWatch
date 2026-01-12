@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth/auth-options';
 import { db } from '@/lib/db/prisma';
 import { sendPushNotification } from '@/lib/notifications/sendPushNotification';
 
-export async function POST(req: Request) {
+export async function POST(_req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.email) {
