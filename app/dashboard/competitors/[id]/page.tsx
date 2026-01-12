@@ -4,7 +4,6 @@ import { useSession } from 'next-auth/react';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Header from '@/components/Header';
 import {
   formatRelativeTime,
   calculateNextCrawl,
@@ -104,10 +103,6 @@ export default function CompetitorDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
-      <Header />
-
-      {/* Main Content */}
       <main className="container mx-auto px-4 sm:px-6 py-8 pb-20 md:pb-8">
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -326,7 +321,5 @@ export default function CompetitorDetailPage() {
           </div>
         </div>
       </main>
-
-    </div>
   );
 }

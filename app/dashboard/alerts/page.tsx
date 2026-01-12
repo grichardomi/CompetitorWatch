@@ -4,7 +4,6 @@ import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Header from '@/components/Header';
 import { formatRelativeTime } from '@/lib/utils/format';
 
 interface Alert {
@@ -68,12 +67,10 @@ export default function AlertsPage() {
   const [competitorId, setCompetitorId] = useState(searchParams.get('competitorId') || 'all');
   const [dateFrom, setDateFrom] = useState(searchParams.get('dateFrom') || '');
   const [dateTo, setDateTo] = useState(searchParams.get('dateTo') || '');
-  const [page, setPage] = useState(parseInt(searchParams.get('page') || '1'));
   const [sortBy, setSortBy] = useState(searchParams.get('sortBy') || 'createdAt');
   const [sortOrder, setSortOrder] = useState(searchParams.get('sortOrder') || 'desc');
-
-  const limit = 20;
-  const offset = (page - 1) * limit;
+  const [displayLimit, setDisplayLimit] = useState(20);
+  const [hasMore, setHasMore] = useState(false);
 
   // Redirect if not authenticated
   if (status === 'unauthenticated') {
@@ -85,14 +82,26 @@ export default function AlertsPage() {
     if (status === 'authenticated') {
       loadAlerts();
     }
-  }, [status, alertType, isRead, competitorId, dateFrom, dateTo, page, sortBy, sortOrder]);
+  }, [status, alertType, isRead, competitorId, dateFrom, dateTo, sortBy, sortOrder]);
+
+  // Reset display limit when filters change
+  useEffect(() => {
+    setDisplayLimit(20);
+  }, [alertType, isRead, competitorId, dateFrom, dateTo, sortBy, sortOrder]);
+
+  // Reload when display limit changes
+  useEffect(() => {
+    if (status === 'authenticated' && displayLimit > 20) {
+      loadAlerts();
+    }
+  }, [displayLimit]);
 
   const loadAlerts = async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
-        limit: limit.toString(),
-        offset: offset.toString(),
+        limit: (displayLimit + 1).toString(), // Fetch one extra to check if there are more
+        offset: '0',
         alertType: alertType !== 'all' ? alertType : '',
         isRead: isRead !== 'all' ? isRead : '',
         competitorId: competitorId !== 'all' ? competitorId : '',
@@ -106,7 +115,10 @@ export default function AlertsPage() {
       if (!res.ok) throw new Error('Failed to load alerts');
 
       const data: AlertsResponse = await res.json();
-      setAlerts(data.alerts);
+      // Check if there are more alerts than displayLimit
+      setHasMore(data.alerts.length > displayLimit);
+      // Only show up to displayLimit
+      setAlerts(data.alerts.slice(0, displayLimit));
       setTotal(data.total);
       setFilterData(data.filters);
       setError('');
@@ -165,7 +177,6 @@ export default function AlertsPage() {
     setCompetitorId('all');
     setDateFrom('');
     setDateTo('');
-    setPage(1);
   };
 
   const hasActiveFilters =
@@ -175,7 +186,6 @@ export default function AlertsPage() {
     dateFrom ||
     dateTo;
 
-  const totalPages = Math.ceil(total / limit);
 
   if (status === 'loading' || loading) {
     return (
@@ -189,10 +199,6 @@ export default function AlertsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
-      <Header />
-
-      {/* Main Content */}
       <main className="container mx-auto px-4 sm:px-6 py-8 pb-20 md:pb-8">
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
@@ -232,7 +238,6 @@ export default function AlertsPage() {
                 value={alertType}
                 onChange={(e) => {
                   setAlertType(e.target.value);
-                  setPage(1);
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"
               >
@@ -254,7 +259,6 @@ export default function AlertsPage() {
                 value={isRead}
                 onChange={(e) => {
                   setIsRead(e.target.value);
-                  setPage(1);
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"
               >
@@ -273,7 +277,6 @@ export default function AlertsPage() {
                 value={competitorId}
                 onChange={(e) => {
                   setCompetitorId(e.target.value);
-                  setPage(1);
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"
               >
@@ -296,7 +299,6 @@ export default function AlertsPage() {
                 value={dateFrom}
                 onChange={(e) => {
                   setDateFrom(e.target.value);
-                  setPage(1);
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"
               />
@@ -312,7 +314,6 @@ export default function AlertsPage() {
                 value={dateTo}
                 onChange={(e) => {
                   setDateTo(e.target.value);
-                  setPage(1);
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"
               />
@@ -326,7 +327,6 @@ export default function AlertsPage() {
               value={sortBy}
               onChange={(e) => {
                 setSortBy(e.target.value);
-                setPage(1);
               }}
               className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-sm"
             >
@@ -464,57 +464,17 @@ export default function AlertsPage() {
           </div>
         )}
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="mt-8 flex items-center justify-between">
+        {/* Load More Button */}
+        {hasMore && alerts.length > 0 && (
+          <div className="mt-8 text-center">
             <button
-              onClick={() => setPage(Math.max(1, page - 1))}
-              disabled={page === 1}
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              onClick={() => setDisplayLimit(prev => prev + 20)}
+              className="px-8 py-3 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors border border-blue-200 hover:border-blue-300"
             >
-              ← Previous
-            </button>
-
-            <div className="flex items-center gap-2">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                let pageNum: number;
-                if (totalPages <= 5) {
-                  pageNum = i + 1;
-                } else if (page <= 3) {
-                  pageNum = i + 1;
-                } else if (page >= totalPages - 2) {
-                  pageNum = totalPages - 4 + i;
-                } else {
-                  pageNum = page - 2 + i;
-                }
-
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => setPage(pageNum)}
-                    className={`w-10 h-10 rounded-lg font-medium transition-colors ${
-                      page === pageNum
-                        ? 'bg-blue-600 text-white'
-                        : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
-            </div>
-
-            <button
-              onClick={() => setPage(Math.min(totalPages, page + 1))}
-              disabled={page === totalPages}
-              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
-            >
-              Next →
+              Load More Alerts ({total - alerts.length} remaining)
             </button>
           </div>
         )}
       </main>
-
-    </div>
   );
 }

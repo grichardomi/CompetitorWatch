@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useSubscription } from '@/lib/providers/SubscriptionProvider';
 
 interface DashboardStats {
   competitorsCount: number;
@@ -11,22 +12,28 @@ interface DashboardStats {
   priceChangesCount: number;
 }
 
-interface Subscription {
-  status: string;
-  daysRemaining: number | null;
-  currentPeriodEnd: string;
+interface ActivityItem {
+  id: number;
+  type: 'alert' | 'competitor_added' | 'price_change';
+  title: string;
+  description: string;
+  createdAt: string;
+  competitorName?: string;
 }
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { subscription } = useSubscription();
   const [checkingStatus, setCheckingStatus] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     competitorsCount: 0,
     alertsCount: 0,
     priceChangesCount: 0,
   });
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
+  const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
+  const [activityLimit, setActivityLimit] = useState(5);
+  const [hasMoreActivity, setHasMoreActivity] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -47,9 +54,8 @@ export default function Dashboard() {
         router.push('/onboarding');
       } else {
         setCheckingStatus(false);
-        // Fetch dashboard stats and subscription
+        // Fetch dashboard stats
         fetchDashboardStats();
-        fetchSubscription();
       }
     } catch (err) {
       console.error('Failed to check onboarding status:', err);
@@ -77,23 +83,46 @@ export default function Dashboard() {
         alertsCount: alertsData.total || 0,
         priceChangesCount: priceChanges,
       });
+
+      // Fetch recent activity
+      await fetchRecentActivity();
     } catch (err) {
       console.error('Failed to fetch dashboard stats:', err);
     }
   };
 
-  const fetchSubscription = async () => {
+  const fetchRecentActivity = async () => {
     try {
-      const res = await fetch('/api/billing/subscription');
+      const res = await fetch(`/api/alerts?limit=${activityLimit + 1}`);
       const data = await res.json();
 
-      if (data.hasSubscription) {
-        setSubscription(data.subscription);
+      if (data.alerts) {
+        const activity: ActivityItem[] = data.alerts.slice(0, activityLimit).map((alert: any) => ({
+          id: alert.id,
+          type: alert.alertType === 'price_change' ? 'price_change' : 'alert',
+          title: alert.alertType === 'price_change' ? 'Price Change Detected' : 'New Alert',
+          description: alert.message,
+          createdAt: alert.createdAt,
+          competitorName: alert.competitor?.name,
+        }));
+
+        setRecentActivity(activity);
+        setHasMoreActivity(data.alerts.length > activityLimit);
       }
     } catch (err) {
-      console.error('Failed to fetch subscription:', err);
+      console.error('Failed to fetch recent activity:', err);
     }
   };
+
+  const loadMoreActivity = () => {
+    setActivityLimit(prev => prev + 5);
+  };
+
+  useEffect(() => {
+    if (recentActivity.length > 0) {
+      fetchRecentActivity();
+    }
+  }, [activityLimit]);
 
   if (status === 'loading' || checkingStatus) {
     return (
@@ -258,11 +287,75 @@ export default function Dashboard() {
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-white rounded-lg border border-gray-200 p-8">
-          <h2 className="text-xl font-bold mb-6">Recent Activity</h2>
-          <div className="text-center py-12">
-            <p className="text-gray-600">No activity yet. Add a competitor to get started!</p>
+        <div className="bg-white rounded-lg border border-gray-200 p-6 sm:p-8">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold">Recent Activity</h2>
+            {recentActivity.length > 0 && (
+              <Link
+                href="/dashboard/alerts"
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                View All →
+              </Link>
+            )}
           </div>
+
+          {recentActivity.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600">No activity yet. Add a competitor to get started!</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {recentActivity.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-start gap-3 p-4 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100"
+                >
+                  {/* Icon */}
+                  <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                    item.type === 'price_change'
+                      ? 'bg-purple-100 text-purple-600'
+                      : 'bg-blue-100 text-blue-600'
+                  }`}>
+                    {item.type === 'price_change' ? '💰' : '🔔'}
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 text-sm">{item.title}</p>
+                        {item.competitorName && (
+                          <p className="text-xs text-gray-500 mt-0.5">{item.competitorName}</p>
+                        )}
+                      </div>
+                      <span className="text-xs text-gray-500 whitespace-nowrap">
+                        {new Date(item.createdAt).toLocaleDateString(undefined, {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">{item.description}</p>
+                  </div>
+                </div>
+              ))}
+
+              {/* Load More Button */}
+              {hasMoreActivity && (
+                <div className="pt-2">
+                  <button
+                    onClick={loadMoreActivity}
+                    className="w-full px-4 py-3 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors border border-blue-200 hover:border-blue-300"
+                  >
+                    Load More Activity
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </main>
   );

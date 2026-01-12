@@ -4,7 +4,6 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import Header from '@/components/Header';
 import { formatRelativeTime, getHostname } from '@/lib/utils/format';
 
 interface Competitor {
@@ -43,6 +42,7 @@ export default function CompetitorsPage() {
     competitorId: number | null;
     competitorName: string;
   }>({ show: false, competitorId: null, competitorName: '' });
+  const [displayLimit, setDisplayLimit] = useState(10);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -122,10 +122,7 @@ export default function CompetitorsPage() {
     subscriptionInfo && competitors.length >= subscriptionInfo.limit;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
-      <Header />
-
-      {/* Main Content */}
+    <>
       <main className="container mx-auto px-4 sm:px-6 py-8 pb-20 md:pb-8">
         {/* Error message */}
         {error && (
@@ -189,8 +186,9 @@ export default function CompetitorsPage() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {competitors.map((competitor) => (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {competitors.slice(0, displayLimit).map((competitor) => (
               <div
                 key={competitor.id}
                 className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow"
@@ -271,8 +269,21 @@ export default function CompetitorsPage() {
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+              ))}
+            </div>
+
+            {/* Load More Button */}
+            {competitors.length > displayLimit && (
+              <div className="mt-8 text-center">
+                <button
+                  onClick={() => setDisplayLimit(prev => prev + 10)}
+                  className="px-8 py-3 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors border border-blue-200 hover:border-blue-300"
+                >
+                  Load More ({competitors.length - displayLimit} remaining)
+                </button>
+              </div>
+            )}
+          </>
         )}
       </main>
 
@@ -306,7 +317,6 @@ export default function CompetitorsPage() {
           </div>
         </div>
       )}
-
-    </div>
+    </>
   );
 }

@@ -3,8 +3,6 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import Header from '@/components/Header';
 import { INDUSTRY_METADATA, type Industry } from '@/lib/config/industries';
 
 interface Business {
@@ -155,10 +153,7 @@ export default function BusinessSettingsPage() {
   const industryMetadata = business ? INDUSTRY_METADATA[business.industry] : null;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
-      <Header />
-
-      {/* Main Content */}
+    <>
       <main className="container mx-auto px-4 sm:px-6 py-8 max-w-4xl pb-20 md:pb-8">
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
@@ -433,7 +428,6 @@ export default function BusinessSettingsPage() {
           </div>
         </div>
       )}
-
-    </div>
+    </>
   );
 }

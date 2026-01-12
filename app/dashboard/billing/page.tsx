@@ -3,8 +3,6 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import Header from '@/components/Header';
 
 interface Subscription {
   status: string;
@@ -35,6 +33,7 @@ export default function BillingPage() {
   const [error, setError] = useState('');
   const [upgrading, setUpgrading] = useState(false);
   const [managingBilling, setManagingBilling] = useState(false);
+  const [displayLimit, setDisplayLimit] = useState(10);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -130,10 +129,6 @@ export default function BillingPage() {
   const isPastDue = subscription?.status === 'past_due';
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
-      <Header />
-
-      {/* Main Content */}
       <main className="container mx-auto px-4 sm:px-6 py-8 pb-20 md:pb-8">
         <h1 className="text-3xl font-bold mb-6">Billing & Subscription</h1>
 
@@ -254,40 +249,52 @@ export default function BillingPage() {
           {payments.length === 0 ? (
             <p className="text-gray-600 text-center py-8">No payment history yet</p>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Date</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Amount</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {payments.map((payment) => (
-                    <tr key={payment.id} className="border-b border-gray-100">
-                      <td className="py-3 px-4">
-                        {new Date(payment.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="py-3 px-4">{payment.amountFormatted}</td>
-                      <td className="py-3 px-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          payment.status === 'succeeded' ? 'bg-green-100 text-green-700' :
-                          payment.status === 'failed' ? 'bg-red-100 text-red-700' :
-                          'bg-gray-100 text-gray-700'
-                        }`}>
-                          {payment.status}
-                        </span>
-                      </td>
+            <>
+              <div className="overflow-x-auto">
+                <table className="min-w-full">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Date</th>
+                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Amount</th>
+                      <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody>
+                    {payments.slice(0, displayLimit).map((payment) => (
+                      <tr key={payment.id} className="border-b border-gray-100">
+                        <td className="py-3 px-4">
+                          {new Date(payment.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="py-3 px-4">{payment.amountFormatted}</td>
+                        <td className="py-3 px-4">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            payment.status === 'succeeded' ? 'bg-green-100 text-green-700' :
+                            payment.status === 'failed' ? 'bg-red-100 text-red-700' :
+                            'bg-gray-100 text-gray-700'
+                          }`}>
+                            {payment.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Load More Button */}
+              {payments.length > displayLimit && (
+                <div className="mt-6 text-center">
+                  <button
+                    onClick={() => setDisplayLimit(prev => prev + 10)}
+                    className="px-8 py-3 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors border border-blue-200 hover:border-blue-300"
+                  >
+                    Load More ({payments.length - displayLimit} remaining)
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </main>
-
-    </div>
   );
 }
